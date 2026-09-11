@@ -1,6 +1,8 @@
 import streamlit as st
 from basedatos import obtener_presupuesto, insertar_presupuesto, actualizar_presupuesto, eliminar_presupuesto, obtener_categorias
 st.set_page_config(page_title="Presupuesto", page_icon="📊")
+from auth import verificar_password
+verificar_password()
 
 st.title("Presupuesto")
 

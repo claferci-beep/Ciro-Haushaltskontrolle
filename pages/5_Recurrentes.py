@@ -1,6 +1,8 @@
 import streamlit as st
 from basedatos import obtener_recurrentes, insertar_recurrente, actualizar_recurrente, eliminar_recurrente, obtener_cuentas, obtener_categorias
 st.set_page_config(page_title="Recurrentes", page_icon="🔁")
+from auth import verificar_password
+verificar_password()
 
 st.title("Recurrentes")
 

@@ -1,6 +1,8 @@
 import streamlit as st
 from basedatos import obtener_cuentas, insertar_cuenta, actualizar_cuenta, eliminar_cuenta
 st.set_page_config(page_title="Cuentas", page_icon="💰")
+from auth import verificar_password
+verificar_password()
 
 st.title("Cuentas")
 

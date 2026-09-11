@@ -1,6 +1,8 @@
 import streamlit as st
 from basedatos import obtener_categorias, insertar_categoria, actualizar_categoria, eliminar_categoria
 st.set_page_config(page_title="Categorias", page_icon="🏷️")
+from auth import verificar_password
+verificar_password()
 
 st.title("Categorias")
 

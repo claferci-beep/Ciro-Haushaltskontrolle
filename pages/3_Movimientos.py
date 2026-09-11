@@ -1,6 +1,8 @@
 
 import streamlit as st
 from basedatos import obtener_movimientos, obtener_cuentas
+from auth import verificar_password
+verificar_password()
 
 st.set_page_config(page_title="Movimientos", page_icon="📋")
 

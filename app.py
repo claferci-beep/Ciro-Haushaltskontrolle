@@ -3,6 +3,9 @@ from basedatos import obtener_cuentas, obtener_movimientos, obtener_presupuesto,
 from basedatos import crear_tablas
 crear_tablas()
 
+from auth import verificar_password
+verificar_password()
+
 st.set_page_config(page_title="Dashboard", page_icon="🏠")
 
 def contar_generados(descripcion, lista_movimientos):
