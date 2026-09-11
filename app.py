@@ -1,5 +1,7 @@
 import streamlit as st
 from basedatos import obtener_cuentas, obtener_movimientos, obtener_presupuesto, obtener_categorias, obtener_recurrentes, insertar_movimiento
+from basedatos import crear_tablas
+crear_tablas()
 
 st.set_page_config(page_title="Dashboard", page_icon="🏠")
 
