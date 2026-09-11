@@ -31,14 +31,18 @@ for mov in movimientos:
         movimientos_filtrados.append(mov)
 
 st.write(f"Mostrando {len(movimientos_filtrados)} de {len(movimientos)} movimientos")
-tabla_md = "| Fecha | Cuenta | Categoría | Tipo | Importe | Cuenta destino | Nota |\n"
-tabla_md += "|---|---|---|---|---|---|---|\n"
 
-for mov in movimientos_filtrados:
-    categoria = mov["categoria"] if mov["categoria"] else "-"
-    destino = mov["cuenta_destino"] if mov["cuenta_destino"] else "-"
-    nota = mov["nota"] if mov["nota"] else "-"
-    tabla_md += f"| {mov['fecha']} | {mov['cuenta']} | {categoria} | {mov['tipo']} | {mov['importe']:.2f} € | {destino} | {nota} |\n"
+try:
+    st.dataframe(movimientos_filtrados, use_container_width=True)
+except Exception:
+    tabla_md = "| Fecha | Cuenta | Categoría | Tipo | Importe | Cuenta destino | Nota |\n"
+    tabla_md += "|---|---|---|---|---|---|---|\n"
 
-with st.container(height=400):
-    st.markdown(tabla_md)
+    for mov in movimientos_filtrados:
+        categoria = mov["categoria"] if mov["categoria"] else "-"
+        destino = mov["cuenta_destino"] if mov["cuenta_destino"] else "-"
+        nota = mov["nota"] if mov["nota"] else "-"
+        tabla_md += f"| {mov['fecha']} | {mov['cuenta']} | {categoria} | {mov['tipo']} | {mov['importe']:.2f} € | {destino} | {nota} |\n"
+
+    with st.container(height=400):
+        st.markdown(tabla_md)
