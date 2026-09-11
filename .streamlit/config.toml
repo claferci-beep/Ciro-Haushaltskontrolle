@@ -1,0 +1,21 @@
+#[theme]
+#primaryColor = "#8FA998"
+#backgroundColor = "#FDFBF7"
+#secondaryBackgroundColor = "#EDE7DD"
+#textColor = "#3A3A3A"
+#font = "sans serif"
+
+#[theme]
+#primaryColor = "#9B8FB5"
+#backgroundColor = "#FAF9FC"
+#secondaryBackgroundColor = "#E8E4F0"
+#textColor = "#333333"
+#font = "sans serif"
+
+[theme]
+primaryColor = "#76a199"
+backgroundColor = "#668187ec"
+secondaryBackgroundColor = "#a7cdc5c0"
+textColor = "#000b0b"
+font = "sans serif"
+baseFontSize = 19
