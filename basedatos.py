@@ -229,8 +229,8 @@ if __name__ == "__main__":
     print("Datos migrados correctamente a la base de datos.")
 
     print("Recurrentes en la base de datos:")
-for r in obtener_recurrentes():
-    print(r)
+    for r in obtener_recurrentes():
+        print(r)
 
 def actualizar_cuenta(id_cuenta, nombre, banco, tipo, saldo_inicial):
     conexion = conectar()
