@@ -80,6 +80,8 @@ ingresos, gastos = calcular_ingresos_gastos(movimientos, mes_actual)
 balance = ingresos - gastos
 
 st.title("Ciro Haushaltskontrolle")
+mostrar_saldo_total = st.checkbox("Mostrar saldo total", value=True)
+mostrar_resto = st.checkbox("Mostrar el resto de saldos", value=True)
 
 st.subheader("Recurrentes del mes")
 if st.button("Ejecutar recurrentes de este mes"):
@@ -94,16 +96,29 @@ saldo_total = 0
 for cuenta in cuentas:
     saldo_total += cuenta["saldo_actual"]
 
-st.metric("Saldo total", f"{saldo_total:.2f} €")
+
+if mostrar_saldo_total:
+    st.metric("Saldo total", f"{saldo_total:.2f} €")
+else:
+    st.metric("Saldo total", "••••••")
 
 col1, col2, col3 = st.columns(3)
-col1.metric("Ingresos del mes", f"{ingresos:.2f} €")
-col2.metric("Gastos del mes", f"{gastos:.2f} €")
-col3.metric("Balance del mes", f"{balance:.2f} €")
+
+if mostrar_resto:
+    col1.metric("Ingresos del mes", f"{ingresos:.2f} €")
+    col2.metric("Gastos del mes", f"{gastos:.2f} €")
+    col3.metric("Balance del mes", f"{balance:.2f} €")
+else:
+    col1.metric("Ingresos del mes", "••••••")
+    col2.metric("Gastos del mes", "••••••")
+    col3.metric("Balance del mes", "••••••")
 
 st.subheader("Mis cuentas")
 for cuenta in cuentas:
-    st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — {cuenta['saldo_actual']:.2f} €")
+    if mostrar_resto:
+        st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — {cuenta['saldo_actual']:.2f} €")
+    else:
+        st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — ••••••")
 
 st.subheader("Consultar saldo de una cuenta")
 
