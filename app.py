@@ -32,10 +32,41 @@ st.markdown("""
     }
 
     [data-testid="stMetricValue"] {
-    font-size: 1.5rem !important;
+        font-size: 1.5rem !important;
+    }
+
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        border: 1.5px solid #0F6B5C !important;
+        border-radius: 10px !important;
+        background-color: #FAFDFC;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #C7DEDA;
+    }
+
+    [data-testid="stSidebarNav"] a {
+        background-color: #FFFFFF;
+        border: 2px solid #0F6B5C;
+        border-radius: 10px;
+        margin: 6px 10px;
+        padding: 10px 14px;
+        color: #0F6B5C !important;
+        font-weight: 600;
+        display: block;
+    }
+
+    [data-testid="stSidebarNav"] a:hover {
+        background-color: #B8D5CF;
+    }
+
+[data-testid="stMarkdownContainer"] h3 {
+    color: #FFFFFF !important;
 }
+
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
@@ -117,6 +148,7 @@ st.markdown("""
     <div style="
         background-color: #FFFFFF;
         border: 2px solid #0F6B5C;
+        border-left: 5px solid #0F6B5C;
         border-radius: 10px;
         padding: 16px 22px;
         margin-bottom: 18px;
@@ -134,13 +166,14 @@ st.markdown("""
 mostrar_saldo_total = st.checkbox("Mostrar saldo total", value=True)
 mostrar_resto = st.checkbox("Mostrar el resto de saldos", value=True)
 
-st.subheader("Recurrentes del mes")
-if st.button("Ejecutar recurrentes de este mes"):
-    recurrentes = obtener_recurrentes()
-    generados = generar_recurrentes(recurrentes, movimientos, mes_actual)
-    if generados:
-        st.success(f"Generados: {', '.join(generados)}")
-    else:
+with st.container(border=True):
+    st.subheader("Recurrentes del mes")
+    if st.button("Ejecutar recurrentes de este mes"):
+      recurrentes = obtener_recurrentes()
+      generados = generar_recurrentes(recurrentes, movimientos, mes_actual)
+      if generados:
+            st.success(f"Generados: {', '.join(generados)}")
+      else:
         st.info("No hay recurrentes pendientes para este mes.")
 
 saldo_total = 0

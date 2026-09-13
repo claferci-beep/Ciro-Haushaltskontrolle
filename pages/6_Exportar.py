@@ -14,7 +14,70 @@ verificar_password()
 
 st.set_page_config(page_title="Reportes", page_icon="📤")
 
-st.title("Generar reporte")
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"],
+    [data-testid="stWidgetLabel"],
+    .stApp h1, .stApp h2, .stApp h3,
+    .stApp p, .stApp label {
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    [data-testid="stMetric"] {
+        background-color: #E4EEEC;
+        border-left: 5px solid #0F6B5C;
+        border-radius: 8px;
+        padding: 14px 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    [data-testid="stMetricValue"] {
+        font-size: 1.5rem !important;
+    }
+
+    [data-testid="stSidebar"] {
+    background-color: #B8D5CF;
+}
+
+[data-testid="stSidebarNav"] a {
+    background-color: #FFFFFF;
+    border: 2px solid #0F6B5C;
+    border-radius: 10px;
+    margin: 6px 10px;
+    padding: 10px 14px;
+    color: #0F6B5C !important;
+    font-weight: 600;
+    display: block;
+}
+
+[data-testid="stSidebarNav"] a:hover {
+    background-color: #A5C7C0;
+}
+
+[data-testid="stMarkdownContainer"] h3 {
+    color: #FFFFFF !important;
+}
+
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <div style="
+        background-color: #FFFFFF;
+        border: 2px solid #0F6B5C;
+        border-radius: 10px;
+        padding: 14px 22px;
+        margin-bottom: 18px;
+    ">
+        <div style="font-size: 1.5rem; font-weight: 700; color: #0F6B5C;">
+            Generar Reportes
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 movimientos = obtener_movimientos()
 cuentas = obtener_cuentas()
