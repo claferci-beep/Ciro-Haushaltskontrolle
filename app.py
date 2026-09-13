@@ -10,6 +10,35 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="Dashboard", page_icon="🏠")
 
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"],
+    [data-testid="stWidgetLabel"],
+    .stApp h1, .stApp h2, .stApp h3,
+    .stApp p, .stApp label {
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    [data-testid="stMetric"] {
+        background-color: #E4EEEC;
+        border-left: 5px solid #0F6B5C;
+        border-radius: 8px;
+        padding: 14px 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    [data-testid="stMetricValue"] {
+    font-size: 1.5rem !important;
+}
+    </style>
+""", unsafe_allow_html=True)
+
+
+
 def contar_generados(descripcion, lista_movimientos):
     contador = 0
     for mov in lista_movimientos:
@@ -84,7 +113,24 @@ mes_actual = "2026-09"
 ingresos, gastos = calcular_ingresos_gastos(movimientos, mes_actual)
 balance = ingresos - gastos
 
-st.title("Ciro Haushaltskontrolle")
+st.markdown("""
+    <div style="
+        background-color: #FFFFFF;
+        border: 2px solid #0F6B5C;
+        border-radius: 10px;
+        padding: 16px 22px;
+        margin-bottom: 18px;
+    ">
+        <div style="font-size: 1.8rem; font-weight: 700; color: #0F6B5C;">
+            Ciro Haushaltskontrolle
+        </div>
+        <div style="font-size: 0.75rem; color: #6B7A78; margin-top: 2px;">
+            by Claudio Cirone™
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+
 mostrar_saldo_total = st.checkbox("Mostrar saldo total", value=True)
 mostrar_resto = st.checkbox("Mostrar el resto de saldos", value=True)
 
