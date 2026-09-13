@@ -6,6 +6,8 @@ crear_tablas()
 from auth import verificar_password
 verificar_password()
 
+import plotly.graph_objects as go
+
 st.set_page_config(page_title="Dashboard", page_icon="🏠")
 
 def contar_generados(descripcion, lista_movimientos):
@@ -146,20 +148,39 @@ for item in presupuestos:
 
 st.subheader("Presupuesto vs Real (gráfico)")
 
-for item in presupuestos:
-    real = calcular_real(item["categoria"], item["mes"], movimientos)
-    porcentaje = real / item["presupuesto"]
+try:
+    nombres_categorias_grafico = []
+    valores_presupuesto = []
+    valores_real = []
 
-    if porcentaje > 1:
-        porcentaje_mostrado = 1.0
-    else:
-        porcentaje_mostrado = porcentaje
+    for item in presupuestos:
+        real = calcular_real(item["categoria"], item["mes"], movimientos)
+        nombres_categorias_grafico.append(item["categoria"])
+        valores_presupuesto.append(item["presupuesto"])
+        valores_real.append(real)
 
-    st.write(f"**{item['categoria']}**: {real:.2f} € de {item['presupuesto']:.2f} € ({porcentaje*100:.0f}%)")
-    st.progress(porcentaje_mostrado)
+    figura = go.Figure()
+    figura.add_trace(go.Bar(name="Presupuesto", x=nombres_categorias_grafico, y=valores_presupuesto, marker_color="#8FA998"))
+    figura.add_trace(go.Bar(name="Real", x=nombres_categorias_grafico, y=valores_real, marker_color="#0F6B5C"))
+    figura.update_layout(barmode="group", height=350, margin=dict(t=20, b=20, l=20, r=20))
 
+    st.plotly_chart(figura, use_container_width=True)
 
+except Exception:
+    for item in presupuestos:
+        real = calcular_real(item["categoria"], item["mes"], movimientos)
+        if item["presupuesto"] > 0:
+            porcentaje = real / item["presupuesto"]
+        else:
+            porcentaje = 0
 
+        if porcentaje > 1:
+            porcentaje_mostrado = 1.0
+        else:
+            porcentaje_mostrado = porcentaje
+
+        st.write(f"**{item['categoria']}**: {real:.2f} € de {item['presupuesto']:.2f} € ({porcentaje*100:.0f}%)")
+        st.progress(porcentaje_mostrado)
 
 
 st.subheader("Agregar nuevo movimiento")
