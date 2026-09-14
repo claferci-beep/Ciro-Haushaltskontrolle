@@ -209,6 +209,27 @@ def obtener_cuentas():
 if __name__ == "__main__":
     crear_tablas()
 
+def actualizar_movimiento(id_movimiento, fecha, cuenta, categoria, tipo, importe, cuenta_destino, nota):
+    conexion = conectar()
+    cursor = conexion.cursor()
+    cursor.execute(
+        "UPDATE movimientos SET fecha = ?, cuenta = ?, categoria = ?, tipo = ?, importe = ?, cuenta_destino = ?, nota = ? WHERE id = ?",
+        (fecha, cuenta, categoria, tipo, importe, cuenta_destino, nota, id_movimiento)
+    )
+    conexion.commit()
+    conexion.close()
+
+
+def eliminar_movimiento(id_movimiento):
+    conexion = conectar()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM movimientos WHERE id = ?", (id_movimiento,))
+    conexion.commit()
+    conexion.close()
+
+if __name__ == "__main__":
+     crear_tablas()
+
     #insertar_categoria("Nómina", "Ingreso")
     #insertar_categoria("Alquiler", "Gasto")
     #insertar_categoria("Supermercado", "Gasto")
@@ -226,10 +247,33 @@ if __name__ == "__main__":
     #insertar_recurrente("Alquiler", "Cuenta Corriente", "Alquiler", "Gasto", 850.00, None, 1, "2026-09", 0)
     #insertar_recurrente("Cuota coche", "Cuenta Corriente", "Coche", "Gasto", 220.00, None, 5, "2026-09", 10)
 
-    print("Datos migrados correctamente a la base de datos.")
+     print("Datos migrados correctamente a la base de datos.")
 
-    print("Recurrentes en la base de datos:")
-    for r in obtener_recurrentes():
+     print("Recurrentes en la base de datos:")
+     for r in obtener_recurrentes():
+        print(r)
+
+    #insertar_categoria("Nómina", "Ingreso")
+    #insertar_categoria("Alquiler", "Gasto")
+    #insertar_categoria("Supermercado", "Gasto")
+    #insertar_categoria("Coche", "Gasto")
+    #insertar_categoria("Ocio", "Gasto")
+
+    #insertar_movimiento("2026-09-01", "Cuenta Corriente", "Nómina", "Ingreso", 2200.00, None, "Sueldo septiembre")
+    #insertar_movimiento("2026-09-03", "Cuenta Corriente", "Supermercado", "Gasto", 65.30, None, "")
+    #insertar_movimiento("2026-09-04", "Cuenta Corriente", None, "Traspaso", 300.00, "Ahorro", "Ahorro mensual")
+
+    #insertar_presupuesto("Alquiler", "09", 850.00)
+    #insertar_presupuesto("Supermercado", "09", 300.00)
+    #insertar_presupuesto("Ocio", "09", 150.00)
+
+    #insertar_recurrente("Alquiler", "Cuenta Corriente", "Alquiler", "Gasto", 850.00, None, 1, "2026-09", 0)
+    #insertar_recurrente("Cuota coche", "Cuenta Corriente", "Coche", "Gasto", 220.00, None, 5, "2026-09", 10)
+
+     print("Datos migrados correctamente a la base de datos.")
+
+     print("Recurrentes en la base de datos:")
+     for r in obtener_recurrentes():
         print(r)
 
 def actualizar_cuenta(id_cuenta, nombre, banco, tipo, saldo_inicial):
