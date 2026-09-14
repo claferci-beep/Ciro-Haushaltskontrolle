@@ -182,8 +182,8 @@ with st.container(border=True):
 
 saldo_total = 0
 for cuenta in cuentas:
-    saldo_total += cuenta["saldo_actual"]
-
+    if cuenta["saldo_actual"] > 0:
+        saldo_total += cuenta["saldo_actual"]
 
 if mostrar_saldo_total:
     st.metric("Saldo total", f"{saldo_total:.2f} €")
