@@ -103,19 +103,18 @@ for r in recurrentes:
             st.rerun()
 
 st.subheader("Agregar nuevo recurrente")
-with st.form("nuevo_recurrente"):
+
+tipo = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"], key="tipo_nuevo_recurrente")
+
+if tipo == "Traspaso":
+    cuenta_destino_recurrente = st.selectbox("Cuenta destino", nombres_cuentas, key="destino_nuevo_recurrente")
+else:
+    cuenta_destino_recurrente = None
+
+with st.form("nuevo_recurrente", clear_on_submit=True):
     descripcion = st.text_input("Descripción")
     cuenta = st.selectbox("Cuenta", nombres_cuentas)
     categoria = st.selectbox("Categoría", nombres_categorias)
-    tipo = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"])
-    importe = st.number_input("Importe", min_value=0.0, step=0.01)
-    tipo = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"])
-
-    if tipo == "Traspaso":
-     cuenta_destino_recurrente = st.selectbox("Cuenta destino", nombres_cuentas)
-    else:
-     cuenta_destino_recurrente = None
-
     importe = st.number_input("Importe", min_value=0.0, step=0.01)
     dia_del_mes = st.number_input("Día del mes", min_value=1, max_value=31, value=1)
     mes_inicio = st.text_input("Mes inicio (AAAA-MM)")
@@ -124,5 +123,5 @@ with st.form("nuevo_recurrente"):
 
 if enviado:
     insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, cuenta_destino_recurrente, dia_del_mes, mes_inicio, cuotas_totales)
-    st.success("Recurrente agregado. Refresca la página.")
+    st.success("Recurrente agregado.")
     st.rerun()
