@@ -95,10 +95,12 @@ for r in recurrentes:
         if col1.button("Guardar cambios", key=f"guardar_{r['id']}"):
             actualizar_recurrente(r["id"], nueva_descripcion, nueva_cuenta, nueva_categoria, nuevo_tipo, nuevo_importe, r["cuenta_destino"], nuevo_dia, r["mes_inicio"], nuevas_cuotas)
             st.success("Actualizado. Refresca la página.")
+            st.rerun()
 
         if col2.button("Eliminar recurrente", key=f"eliminar_{r['id']}"):
             eliminar_recurrente(r["id"])
             st.success("Eliminado. Refresca la página.")
+            st.rerun()
 
 st.subheader("Agregar nuevo recurrente")
 with st.form("nuevo_recurrente"):
@@ -107,11 +109,20 @@ with st.form("nuevo_recurrente"):
     categoria = st.selectbox("Categoría", nombres_categorias)
     tipo = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"])
     importe = st.number_input("Importe", min_value=0.0, step=0.01)
+    tipo = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"])
+
+    if tipo == "Traspaso":
+     cuenta_destino_recurrente = st.selectbox("Cuenta destino", nombres_cuentas)
+    else:
+     cuenta_destino_recurrente = None
+
+    importe = st.number_input("Importe", min_value=0.0, step=0.01)
     dia_del_mes = st.number_input("Día del mes", min_value=1, max_value=31, value=1)
     mes_inicio = st.text_input("Mes inicio (AAAA-MM)")
     cuotas_totales = st.number_input("Cuotas totales (0 = indefinido)", min_value=0, value=0)
     enviado = st.form_submit_button("Agregar recurrente")
 
 if enviado:
-    insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, None, dia_del_mes, mes_inicio, cuotas_totales)
+    insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, cuenta_destino_recurrente, dia_del_mes, mes_inicio, cuotas_totales)
     st.success("Recurrente agregado. Refresca la página.")
+    st.rerun()

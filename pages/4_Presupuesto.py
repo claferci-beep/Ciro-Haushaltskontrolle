@@ -87,10 +87,12 @@ for item in presupuestos:
         if col1.button("Guardar cambios", key=f"guardar_{item['id']}"):
             actualizar_presupuesto(item["id"], nueva_categoria, nuevo_mes, nuevo_presupuesto)
             st.success("Actualizado. Refresca la página.")
+            st.rerun()
 
         if col2.button("Eliminar presupuesto", key=f"eliminar_{item['id']}"):
             eliminar_presupuesto(item["id"])
             st.success("Eliminado. Refresca la página.")
+            st.rerun()
 
 st.subheader("Agregar nuevo presupuesto")
 with st.form("nuevo_presupuesto"):
@@ -102,3 +104,4 @@ with st.form("nuevo_presupuesto"):
 if enviado:
     insertar_presupuesto(categoria, mes, presupuesto)
     st.success("Presupuesto agregado. Refresca la página.")
+    st.rerun()

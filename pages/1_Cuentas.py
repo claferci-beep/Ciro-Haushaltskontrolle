@@ -3,6 +3,7 @@ from basedatos import obtener_cuentas, insertar_cuenta, actualizar_cuenta, elimi
 st.set_page_config(page_title="Cuentas", page_icon="💰")
 from auth import verificar_password
 verificar_password()
+from basedatos import obtener_movimientos
 
 st.markdown("""
     <style>
@@ -70,33 +71,58 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+def aplicar_movimientos(lista_cuentas, lista_movimientos):
+    for mov in lista_movimientos:
+        for cuenta in lista_cuentas:
+            if cuenta["nombre"] == mov["cuenta"]:
+                if mov["tipo"] == "Ingreso":
+                    cuenta["saldo_actual"] += mov["importe"]
+                elif mov["tipo"] == "Gasto":
+                    cuenta["saldo_actual"] -= mov["importe"]
+                elif mov["tipo"] == "Traspaso":
+                    cuenta["saldo_actual"] -= mov["importe"]
+            if cuenta["nombre"] == mov["cuenta_destino"]:
+                cuenta["saldo_actual"] += mov["importe"]
+    return lista_cuentas
+
 cuentas = obtener_cuentas()
 
-st.subheader("Cuentas existentes")
+movimientos = obtener_movimientos()
+
 for cuenta in cuentas:
-    with st.expander(f"{cuenta['nombre']} — {cuenta['saldo_actual']:.2f} €"):
+    cuenta["saldo_actual"] = cuenta["saldo_inicial"]
+
+aplicar_movimientos(cuentas, movimientos)
+
+with st.expander(f"Cuentas existentes ({len(cuentas)})"):
+#st.subheader("Cuentas existentes")
+  for cuenta in cuentas:
+    
+    with st.expander(f"{cuenta['nombre']} — {cuenta['saldo_actual']:.2f} € (inicial: {cuenta['saldo_inicial']:.2f} €)"):
         nuevo_nombre = st.text_input("Nombre", value=cuenta["nombre"], key=f"nombre_{cuenta['id']}")
         nuevo_banco = st.text_input("Banco", value=cuenta["banco"], key=f"banco_{cuenta['id']}")
-        nuevo_tipo = st.selectbox("Tipo", ["Corriente", "Ahorro", "Efectivo"], key=f"tipo_{cuenta['id']}")
+        nuevo_tipo = st.selectbox("Tipo", ["Corriente", "Ahorro", "Efectivo","Inversión", "Créditos"], key=f"tipo_{cuenta['id']}")
         nuevo_saldo = st.number_input("Saldo inicial", value=cuenta["saldo_inicial"], key=f"saldo_{cuenta['id']}")
 
         col1, col2 = st.columns(2)
         if col1.button("Guardar cambios", key=f"guardar_{cuenta['id']}"):
-            actualizar_cuenta(cuenta["id"], nuevo_nombre, nuevo_banco, nuevo_tipo, nuevo_saldo)
-            st.success("Actualizado. Refresca la página.")
+           actualizar_cuenta(cuenta["id"], nuevo_nombre, nuevo_banco, nuevo_tipo, nuevo_saldo)
+           st.success("Actualizado.")
+           st.rerun()
 
         if col2.button("Eliminar cuenta", key=f"eliminar_{cuenta['id']}"):
-            eliminar_cuenta(cuenta["id"])
-            st.success("Eliminado. Refresca la página.")
-
+           eliminar_cuenta(cuenta["id"])
+           st.success("Eliminado.")
+           st.rerun()
 st.subheader("Agregar nueva cuenta")
-with st.form("nueva_cuenta"):
+with st.form("nueva_cuenta", clear_on_submit=True):
     nombre = st.text_input("Nombre")
     banco = st.text_input("Banco")
-    tipo = st.selectbox("Tipo", ["Corriente", "Ahorro", "Efectivo"])
-    saldo_inicial = st.number_input("Saldo inicial", min_value=0.0, step=0.01)
+    tipo = st.selectbox("Tipo", ["Corriente", "Ahorro", "Efectivo", "Inversión", "Créditos"])
+    saldo_inicial = st.number_input("Saldo inicial", step=0.01)
     enviado = st.form_submit_button("Agregar cuenta")
 
 if enviado:
     insertar_cuenta(nombre, banco, tipo, saldo_inicial)
     st.success("Cuenta agregada. Refresca la página.")
+    st.rerun()

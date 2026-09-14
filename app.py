@@ -130,9 +130,13 @@ def aplicar_movimientos(lista_cuentas, lista_movimientos):
                 cuenta["saldo_actual"] += mov["importe"]
     return lista_cuentas
 
+
 categorias = obtener_categorias()
 cuentas = obtener_cuentas()
+
+
 movimientos = obtener_movimientos()
+
 presupuestos = obtener_presupuesto()
 
 for cuenta in cuentas:
@@ -197,12 +201,12 @@ else:
     col2.metric("Gastos del mes", "••••••")
     col3.metric("Balance del mes", "••••••")
 
-st.subheader("Mis cuentas")
-for cuenta in cuentas:
-    if mostrar_resto:
-        st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — {cuenta['saldo_actual']:.2f} €")
-    else:
-        st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — ••••••")
+with st.expander(f"Mis cuentas ({len(cuentas)})"):
+    for cuenta in cuentas:
+        if mostrar_resto:
+            st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — {cuenta['saldo_actual']:.2f} €")
+        else:
+            st.write(f"**{cuenta['nombre']}** ({cuenta['tipo']}) — ••••••")
 
 st.subheader("Consultar saldo de una cuenta")
 
@@ -261,13 +265,18 @@ except Exception:
         st.write(f"**{item['categoria']}**: {real:.2f} € de {item['presupuesto']:.2f} € ({porcentaje*100:.0f}%)")
         st.progress(porcentaje_mostrado)
 
-
 st.subheader("Agregar nuevo movimiento")
 
-with st.form("nuevo_movimiento"):
+tipo_movimiento = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"], key="tipo_nuevo_mov")
+
+if tipo_movimiento == "Traspaso":
+    cuenta_destino_movimiento = st.selectbox("Cuenta destino", nombres_cuentas, key="destino_nuevo_mov")
+else:
+    cuenta_destino_movimiento = None
+
+with st.form("nuevo_movimiento", clear_on_submit=True):
     fecha = st.date_input("Fecha")
     cuenta_movimiento = st.selectbox("Cuenta", nombres_cuentas)
-    tipo_movimiento = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"])
 
     nombres_categorias = []
     for cat in categorias:
@@ -286,7 +295,8 @@ if enviado:
         categoria_movimiento,
         tipo_movimiento,
         importe_movimiento,
-        None,
+        cuenta_destino_movimiento,
         nota_movimiento
     )
-    st.success("Movimiento guardado correctamente. Refresca la página para ver los cambios reflejados.")
+    st.success("Movimiento guardado correctamente.")
+    st.rerun()

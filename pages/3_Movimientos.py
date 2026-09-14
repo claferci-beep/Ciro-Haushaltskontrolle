@@ -1,6 +1,5 @@
-
 import streamlit as st
-from basedatos import obtener_movimientos, obtener_cuentas
+from basedatos import obtener_movimientos, obtener_cuentas, actualizar_movimiento, eliminar_movimiento, obtener_categorias
 from auth import verificar_password
 verificar_password()
 
@@ -31,29 +30,28 @@ st.markdown("""
         font-size: 1.5rem !important;
     }
 
-[data-testid="stSidebar"] {
-    background-color: #B8D5CF;
-}
+    [data-testid="stSidebar"] {
+        background-color: #B8D5CF;
+    }
 
-[data-testid="stSidebarNav"] a {
-    background-color: #FFFFFF;
-    border: 2px solid #0F6B5C;
-    border-radius: 10px;
-    margin: 6px 10px;
-    padding: 10px 14px;
-    color: #0F6B5C !important;
-    font-weight: 600;
-    display: block;
-}
+    [data-testid="stSidebarNav"] a {
+        background-color: #FFFFFF;
+        border: 2px solid #0F6B5C;
+        border-radius: 10px;
+        margin: 6px 10px;
+        padding: 10px 14px;
+        color: #0F6B5C !important;
+        font-weight: 600;
+        display: block;
+    }
 
-[data-testid="stSidebarNav"] a:hover {
-    background-color: #A5C7C0;
-}
+    [data-testid="stSidebarNav"] a:hover {
+        background-color: #A5C7C0;
+    }
 
-[data-testid="stMarkdownContainer"] h3 {
-    color: #FFFFFF !important;
-}
-
+    [data-testid="stMarkdownContainer"] h3 {
+        color: #FFFFFF !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -73,10 +71,15 @@ st.markdown("""
 
 movimientos = obtener_movimientos()
 cuentas = obtener_cuentas()
+categorias = obtener_categorias()
 
 nombres_cuentas = ["Todas"]
 for c in cuentas:
     nombres_cuentas.append(c["nombre"])
+
+nombres_categorias = []
+for cat in categorias:
+    nombres_categorias.append(cat["nombre"])
 
 meses_disponibles = ["Todos"]
 for mov in movimientos:
@@ -111,3 +114,49 @@ except Exception:
 
     with st.container(height=400):
         st.markdown(tabla_md)
+
+st.subheader("Editar o eliminar un movimiento")
+
+if movimientos_filtrados:
+    etiquetas = []
+    for mov in movimientos_filtrados:
+        etiquetas.append(f"{mov['fecha']} — {mov['cuenta']} — {mov['tipo']} — {mov['importe']:.2f} €")
+
+    indice_elegido = st.selectbox("Elige un movimiento", range(len(etiquetas)), format_func=lambda i: etiquetas[i])
+    mov = movimientos_filtrados[indice_elegido]
+
+    nueva_fecha = st.text_input("Fecha (AAAA-MM-DD)", value=mov["fecha"])
+    nueva_cuenta = st.selectbox("Cuenta", nombres_cuentas[1:], index=nombres_cuentas[1:].index(mov["cuenta"]) if mov["cuenta"] in nombres_cuentas[1:] else 0)
+    nuevo_tipo = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"], index=["Ingreso", "Gasto", "Traspaso"].index(mov["tipo"]))
+
+    if nuevo_tipo == "Traspaso":
+        opciones_destino = nombres_cuentas[1:]
+        if mov["cuenta_destino"] and mov["cuenta_destino"] in opciones_destino:
+            indice_destino = opciones_destino.index(mov["cuenta_destino"])
+        else:
+            indice_destino = 0
+        nueva_cuenta_destino = st.selectbox("Cuenta destino", opciones_destino, index=indice_destino)
+    else:
+        nueva_cuenta_destino = None
+
+    if mov["categoria"] and mov["categoria"] in nombres_categorias:
+        indice_cat = nombres_categorias.index(mov["categoria"])
+    else:
+        indice_cat = 0
+    nueva_categoria = st.selectbox("Categoría", nombres_categorias, index=indice_cat)
+
+    nuevo_importe = st.number_input("Importe", value=mov["importe"])
+    nueva_nota = st.text_input("Nota", value=mov["nota"] if mov["nota"] else "")
+
+    colA, colB = st.columns(2)
+    if colA.button("Guardar cambios"):
+        actualizar_movimiento(mov["id"], nueva_fecha, nueva_cuenta, nueva_categoria, nuevo_tipo, nuevo_importe, nueva_cuenta_destino, nueva_nota)
+        st.success("Actualizado.")
+        st.rerun()
+
+    if colB.button("Eliminar movimiento"):
+        eliminar_movimiento(mov["id"])
+        st.success("Eliminado.")
+        st.rerun()
+else:
+    st.info("No hay movimientos para editar con los filtros actuales.")
