@@ -7,6 +7,7 @@ from auth import verificar_password
 verificar_password()
 
 import plotly.graph_objects as go
+from datetime import date
 
 st.set_page_config(page_title="Dashboard", page_icon="🏠")
 
@@ -117,7 +118,10 @@ def calcular_real(categoria, mes, lista_movimientos):
 
 
 def aplicar_movimientos(lista_cuentas, lista_movimientos):
+    hoy = str(date.today())
     for mov in lista_movimientos:
+        if mov["fecha"] > hoy:
+            continue
         for cuenta in lista_cuentas:
             if cuenta["nombre"] == mov["cuenta"]:
                 if mov["tipo"] == "Ingreso":
