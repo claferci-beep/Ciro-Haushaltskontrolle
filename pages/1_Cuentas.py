@@ -4,6 +4,7 @@ from auth import verificar_password
 verificar_password()
 
 st.set_page_config(page_title="Cuentas", page_icon="💰")
+from datetime import date
 
 st.markdown("""
     <style>
