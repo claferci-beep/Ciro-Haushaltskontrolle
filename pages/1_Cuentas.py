@@ -1,9 +1,9 @@
 import streamlit as st
-from basedatos import obtener_cuentas, insertar_cuenta, actualizar_cuenta, eliminar_cuenta
-st.set_page_config(page_title="Cuentas", page_icon="💰")
+from basedatos import obtener_cuentas, insertar_cuenta, actualizar_cuenta, eliminar_cuenta, obtener_movimientos
 from auth import verificar_password
 verificar_password()
-from basedatos import obtener_movimientos
+
+st.set_page_config(page_title="Cuentas", page_icon="💰")
 
 st.markdown("""
     <style>
@@ -31,29 +31,36 @@ st.markdown("""
     }
 
     [data-testid="stSidebar"] {
-    background-color: #B8D5CF;
-}
+        background-color: #B8D5CF;
+    }
 
-[data-testid="stSidebarNav"] a {
-    background-color: #FFFFFF;
-    border: 2px solid #0F6B5C;
-    border-left: 5px solid #0F6B5C;
-    border-radius: 10px;
-    margin: 6px 10px;
-    padding: 10px 14px;
-    color: #0F6B5C !important;
-    font-weight: 600;
-    display: block;
-}
+    [data-testid="stSidebarNav"] a {
+        background-color: #FFFFFF;
+        border: 2px solid #0F6B5C;
+        border-left: 5px solid #0F6B5C;
+        border-radius: 10px;
+        margin: 6px 10px;
+        padding: 10px 14px;
+        color: #0F6B5C !important;
+        font-weight: 600;
+        display: block;
+    }
 
-[data-testid="stSidebarNav"] a:hover {
-    background-color: #A5C7C0;
+    [data-testid="stSidebarNav"] a:hover {
+        background-color: #A5C7C0;
+    }
 
-}
+    [data-testid="stMarkdownContainer"] h3 {
+        color: #FFFFFF !important;
+    }
 
-[data-testid="stMarkdownContainer"] h3 {
-    color: #FFFFFF !important;
-}
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+        color: #FFFFFF !important;
+    }
+
+    [data-testid="stSelectbox"] label {
+        color: #FFFFFF !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -71,8 +78,12 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+
 def aplicar_movimientos(lista_cuentas, lista_movimientos):
+    hoy = str(date.today())
     for mov in lista_movimientos:
+        if mov["fecha"] > hoy:
+            continue
         for cuenta in lista_cuentas:
             if cuenta["nombre"] == mov["cuenta"]:
                 if mov["tipo"] == "Ingreso":
@@ -85,8 +96,8 @@ def aplicar_movimientos(lista_cuentas, lista_movimientos):
                 cuenta["saldo_actual"] += mov["importe"]
     return lista_cuentas
 
-cuentas = obtener_cuentas()
 
+cuentas = obtener_cuentas()
 movimientos = obtener_movimientos()
 
 for cuenta in cuentas:
@@ -94,35 +105,42 @@ for cuenta in cuentas:
 
 aplicar_movimientos(cuentas, movimientos)
 
+tipos_disponibles = ["Corriente", "Ahorro", "Efectivo", "Inversión", "Créditos"]
+
 with st.expander(f"Cuentas existentes ({len(cuentas)})"):
-#st.subheader("Cuentas existentes")
-  for cuenta in cuentas:
-    
-    with st.expander(f"{cuenta['nombre']} — {cuenta['saldo_actual']:.2f} € (inicial: {cuenta['saldo_inicial']:.2f} €)"):
-        nuevo_nombre = st.text_input("Nombre", value=cuenta["nombre"], key=f"nombre_{cuenta['id']}")
-        nuevo_banco = st.text_input("Banco", value=cuenta["banco"], key=f"banco_{cuenta['id']}")
-        nuevo_tipo = st.selectbox("Tipo", ["Corriente", "Ahorro", "Efectivo","Inversión", "Créditos"], key=f"tipo_{cuenta['id']}")
-        nuevo_saldo = st.number_input("Saldo inicial", value=cuenta["saldo_inicial"], key=f"saldo_{cuenta['id']}")
+    for cuenta in cuentas:
+        with st.expander(f"{cuenta['nombre']} — {cuenta['saldo_actual']:.2f} € (inicial: {cuenta['saldo_inicial']:.2f} €)"):
+            nuevo_nombre = st.text_input("Nombre", value=cuenta["nombre"], key=f"nombre_{cuenta['id']}")
+            nuevo_banco = st.text_input("Banco", value=cuenta["banco"], key=f"banco_{cuenta['id']}")
 
-        col1, col2 = st.columns(2)
-        if col1.button("Guardar cambios", key=f"guardar_{cuenta['id']}"):
-           actualizar_cuenta(cuenta["id"], nuevo_nombre, nuevo_banco, nuevo_tipo, nuevo_saldo)
-           st.success("Actualizado.")
-           st.rerun()
+            if cuenta["tipo"] in tipos_disponibles:
+                indice_tipo = tipos_disponibles.index(cuenta["tipo"])
+            else:
+                indice_tipo = 0
+            nuevo_tipo = st.selectbox("Tipo", tipos_disponibles, index=indice_tipo, key=f"tipo_{cuenta['id']}")
 
-        if col2.button("Eliminar cuenta", key=f"eliminar_{cuenta['id']}"):
-           eliminar_cuenta(cuenta["id"])
-           st.success("Eliminado.")
-           st.rerun()
+            nuevo_saldo = st.number_input("Saldo inicial", value=cuenta["saldo_inicial"], key=f"saldo_{cuenta['id']}")
+
+            col1, col2 = st.columns(2)
+            if col1.button("Guardar cambios", key=f"guardar_{cuenta['id']}"):
+                actualizar_cuenta(cuenta["id"], nuevo_nombre, nuevo_banco, nuevo_tipo, nuevo_saldo)
+                st.success("Actualizado.")
+                st.rerun()
+
+            if col2.button("Eliminar cuenta", key=f"eliminar_{cuenta['id']}"):
+                eliminar_cuenta(cuenta["id"])
+                st.success("Eliminado.")
+                st.rerun()
+
 st.subheader("Agregar nueva cuenta")
 with st.form("nueva_cuenta", clear_on_submit=True):
     nombre = st.text_input("Nombre")
     banco = st.text_input("Banco")
-    tipo = st.selectbox("Tipo", ["Corriente", "Ahorro", "Efectivo", "Inversión", "Créditos"])
+    tipo = st.selectbox("Tipo", tipos_disponibles)
     saldo_inicial = st.number_input("Saldo inicial", step=0.01)
     enviado = st.form_submit_button("Agregar cuenta")
 
 if enviado:
     insertar_cuenta(nombre, banco, tipo, saldo_inicial)
-    st.success("Cuenta agregada. Refresca la página.")
+    st.success("Cuenta agregada.")
     st.rerun()
