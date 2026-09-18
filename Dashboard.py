@@ -61,9 +61,56 @@ st.markdown("""
         background-color: #B8D5CF;
     }
 
-[data-testid="stMarkdownContainer"] h3 {
-    color: #FFFFFF !important;
+    [data-testid="stMarkdownContainer"] h3 {
+         color: #FFFFFF !important;
+    }
+
+    [data-testid="stExpander"] [data-testid="stMarkdownContainer"] p {
+         color: #FFFFFF !important;
 }
+
+    [data-testid="stExpander"] summary p {
+         color: #00FFFF !important;
+         font-weight: bold !important;
+}
+
+    [data-testid="stFormSubmitButton"] button p {
+         color: #FFFFFF !important;
+         font-weight: bold !important;
+}
+
+    [data-testid="stSelectbox"] label p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+}
+
+
+    [data-testid="stDateInput"] label p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+}
+
+    [data-testid="stNumberInput"] label p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+}
+
+    [data-testid="stTextInput"] label p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+}   
+
+    [data-testid="stBaseButton-secondary"] p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+}
+
+
+    [data-testid="stFormSubmitButton"] button,
+    [data-testid="stBaseButton-secondary"] {
+    background-color: #35859E !important;
+    border-color: #0F6B5C !important;
+    }
 
     </style>
 """, unsafe_allow_html=True)
@@ -161,17 +208,20 @@ st.markdown("""
         padding: 16px 22px;
         margin-bottom: 18px;
     ">
-        <div style="font-size: 1.8rem; font-weight: 700; color: #0F6B5C;">
-            Ciro Haushaltskontrolle
+        <div style="font-size: 1.95rem; font-weight: 700; color: #0F6B5C;">
+            CIRO 
         </div>
-        <div style="font-size: 0.75rem; color: #6B7A78; margin-top: 2px;">
+        <div style="font-size: 1.95rem; font-weight: 700; color: #0F6B5C;">
+            Haushaltskontrolle
+        </div>
+        <div style="font-size: 0.95rem; color: #6B7A78; margin-top: 2px;">
             by Claudio Cirone™
         </div>
     </div>
 """, unsafe_allow_html=True)
 
 
-mostrar_saldo_total = st.checkbox("Mostrar saldo total", value=True)
+mostrar_saldo_total = st.checkbox("Mostrar saldo total", value=False)
 mostrar_resto = st.checkbox("Mostrar el resto de saldos", value=True)
 
 with st.container(border=True):
@@ -222,7 +272,7 @@ cuenta_elegida = st.selectbox("Elige una cuenta:", nombres_cuentas)
 
 for cuenta in cuentas:
     if cuenta["nombre"] == cuenta_elegida:
-        st.write(f"Saldo de **{cuenta_elegida}**: {cuenta['saldo_actual']:.2f} €")
+        st.markdown(f'<p style="color:#30C2C9; font-weight:bold;">Saldo de {cuenta_elegida}: {cuenta["saldo_actual"]:.3f} €</p>', unsafe_allow_html=True)
 
 st.subheader("Presupuesto vs Real")
 
@@ -269,38 +319,3 @@ except Exception:
         st.write(f"**{item['categoria']}**: {real:.2f} € de {item['presupuesto']:.2f} € ({porcentaje*100:.0f}%)")
         st.progress(porcentaje_mostrado)
 
-st.subheader("Agregar nuevo movimiento")
-
-tipo_movimiento = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"], key="tipo_nuevo_mov")
-
-if tipo_movimiento == "Traspaso":
-    cuenta_destino_movimiento = st.selectbox("Cuenta destino", nombres_cuentas, key="destino_nuevo_mov")
-else:
-    cuenta_destino_movimiento = None
-
-with st.form("nuevo_movimiento", clear_on_submit=True):
-    fecha = st.date_input("Fecha")
-    cuenta_movimiento = st.selectbox("Cuenta", nombres_cuentas)
-
-    nombres_categorias = []
-    for cat in categorias:
-        nombres_categorias.append(cat["nombre"])
-    categoria_movimiento = st.selectbox("Categoría", nombres_categorias)
-
-    importe_movimiento = st.number_input("Importe", min_value=0.0, step=0.01)
-    nota_movimiento = st.text_input("Nota (opcional)")
-
-    enviado = st.form_submit_button("Guardar movimiento")
-
-if enviado:
-    insertar_movimiento(
-        str(fecha),
-        cuenta_movimiento,
-        categoria_movimiento,
-        tipo_movimiento,
-        importe_movimiento,
-        cuenta_destino_movimiento,
-        nota_movimiento
-    )
-    st.success("Movimiento guardado correctamente.")
-    st.rerun()

@@ -62,6 +62,43 @@ st.markdown("""
     [data-testid="stSelectbox"] label {
         color: #FFFFFF !important;
     }
+
+    
+    [data-testid="stExpander"] [data-testid="stMarkdownContainer"] p {
+    color: #FFFFFF !important;
+
+    }
+
+    [data-testid="stExpander"] summary p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+
+    
+   
+    }
+
+
+    [data-testid="stTextInput"] label p {
+    color: #FFFFFF !important;
+    
+   }
+
+    [data-testid="stNumberInput"] label p {
+    color: #FFFFFF !important;
+    }
+
+    [data-testid="stFormSubmitButton"] button p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+    }
+
+
+    [data-testid="stFormSubmitButton"] button,
+    [data-testid="stBaseButton-secondary"] {
+    background-color: #35859E !important;
+    border-color: #0F6B5C !important;
+    }
+
     </style>
 """, unsafe_allow_html=True)
 

@@ -62,6 +62,22 @@ st.markdown("""
     color: #FFFFFF !important;
 }
 
+[data-testid="stFormSubmitButton"] button,
+[data-testid="stBaseButton-secondary"] {
+background-color: #35859E !important;
+border-color: #0F6B5C !important;
+}
+
+[data-testid="stFormSubmitButton"] button p {
+color: #FFFFFF !important;
+font-weight: bold !important;
+}
+
+[data-testid="stBaseButton-secondary"] p {
+color: #FFFFFF !important;
+font-weight: bold !important;
+}
+
     </style>
 """, unsafe_allow_html=True)
 

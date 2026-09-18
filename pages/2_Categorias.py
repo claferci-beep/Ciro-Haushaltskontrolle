@@ -29,28 +29,63 @@ st.markdown("""
         font-size: 1.5rem !important;
     }
 
-[data-testid="stSidebar"] {
-    background-color: #B8D5CF;
-}
+    [data-testid="stSidebar"] {
+        background-color: #B8D5CF;
+    }
 
-[data-testid="stSidebarNav"] a {
-    background-color: #FFFFFF;
-    border: 2px solid #0F6B5C;
-    border-radius: 10px;
-    margin: 6px 10px;
-    padding: 10px 14px;
-    color: #0F6B5C !important;
-    font-weight: 600;
-    display: block;
-}
+    [data-testid="stSidebarNav"] a {
+        background-color: #FFFFFF;
+        border: 2px solid #0F6B5C;
+        border-radius: 10px;
+        margin: 6px 10px;
+        padding: 10px 14px;
+        color: #0F6B5C !important;
+        font-weight: 600;
+        display: block;
+    }
 
-[data-testid="stSidebarNav"] a:hover {
-    background-color: #A5C7C0;
-}
+    [data-testid="stSidebarNav"] a:hover {
+        background-color: #A5C7C0;
+    }
 
-[data-testid="stMarkdownContainer"] h3 {
-    color: #FFFFFF !important;
-}
+    [data-testid="stMarkdownContainer"] h3 {
+        color: #FFFFFF !important;
+    }
+
+    [data-testid="stExpander"] summary p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    [data-testid="stExpander"] [data-testid="stMarkdownContainer"] p {
+        color: #FFFFFF !important;
+    }
+
+    [data-testid="stFormSubmitButton"] button p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    [data-testid="stSelectbox"] label p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    [data-testid="stMarkdownContainer"] p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    [data-testid="stSidebarNav"] a p,
+    [data-testid="stSidebarNav"] a span {
+        color: #0F6B5C !important;
+    }
+
+    [data-testid="stFormSubmitButton"] button,
+    [data-testid="stBaseButton-secondary"] {
+    background-color: #35859E !important;
+    border-color: #0F6B5C !important;
+    }
 
     </style>
 """, unsafe_allow_html=True)
@@ -100,4 +135,22 @@ if enviado:
     insertar_categoria(nombre, tipo)
     st.success("categoria agregada. Refresca la página.")
     st.rerun()
-    
+
+st.markdown("""
+    <style>
+    [data-testid="stSelectbox"] label p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    [data-testid="stWidgetLabel"] p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+
+    [data-testid="stMarkdownContainer"] p {
+        color: #FFFFFF !important;
+        font-weight: bold !important;
+    }
+    </style>
+""", unsafe_allow_html=True)

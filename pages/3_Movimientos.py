@@ -3,7 +3,7 @@ from basedatos import obtener_movimientos, obtener_cuentas, actualizar_movimient
 from auth import verificar_password
 verificar_password()
 
-st.set_page_config(page_title="Movimientos", page_icon="📋")
+st.set_page_config(page_title="Movimientos", page_icon="📋", layout="wide")
 
 st.markdown("""
     <style>
@@ -52,6 +52,23 @@ st.markdown("""
     [data-testid="stMarkdownContainer"] h3 {
         color: #FFFFFF !important;
     }
+
+    [data-testid="stFormSubmitButton"] button,
+    [data-testid="stBaseButton-secondary"] {
+    background-color: #35859E !important;
+    border-color: #0F6B5C !important;
+    }
+
+    [data-testid="stFormSubmitButton"] button p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+    }
+
+    [data-testid="stBaseButton-secondary"] p {
+    color: #FFFFFF !important;
+    font-weight: bold !important;
+    }
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -88,8 +105,12 @@ for mov in movimientos:
         meses_disponibles.append(mes)
 
 col1, col2 = st.columns(2)
-cuenta_filtro = col1.selectbox("Filtrar por cuenta", nombres_cuentas)
-mes_filtro = col2.selectbox("Filtrar por mes", meses_disponibles)
+
+col1.markdown('<p style="color:#FFFFFF; font-weight:bold; margin-bottom:0;">Filtrar por cuenta</p>', unsafe_allow_html=True)
+cuenta_filtro = col1.selectbox("Filtrar por cuenta", nombres_cuentas, label_visibility="collapsed")
+
+col2.markdown('<p style="color:#FFFFFF; font-weight:bold; margin-bottom:0;">Filtrar por mes</p>', unsafe_allow_html=True)
+mes_filtro = col2.selectbox("Filtrar por mes", meses_disponibles, label_visibility="collapsed")
 
 movimientos_filtrados = []
 for mov in movimientos:
@@ -98,10 +119,16 @@ for mov in movimientos:
     if coincide_cuenta and coincide_mes:
         movimientos_filtrados.append(mov)
 
-st.write(f"Mostrando {len(movimientos_filtrados)} de {len(movimientos)} movimientos")
+st.markdown(f'<p style="color:#FFFFFF; font-weight:bold;">Mostrando {len(movimientos_filtrados)} de {len(movimientos)} movimientos</p>', unsafe_allow_html=True)
 
 try:
-    st.dataframe(movimientos_filtrados, use_container_width=True)
+    st.dataframe(
+    movimientos_filtrados,
+    use_container_width=True,
+    column_config={
+        "nota": st.column_config.TextColumn("Nota", width="medium")
+    }
+)
 except Exception:
     tabla_md = "| Fecha | Cuenta | Categoría | Tipo | Importe | Cuenta destino | Nota |\n"
     tabla_md += "|---|---|---|---|---|---|---|\n"
