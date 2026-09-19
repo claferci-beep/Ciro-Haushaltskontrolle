@@ -9,6 +9,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.units import cm
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill
 
 verificar_password()
 
@@ -139,7 +141,7 @@ with st.container(height=300):
 
 st.subheader("Descargar este reporte")
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 # --- CSV ---
 buffer_csv = io.StringIO()
@@ -209,4 +211,51 @@ col2.download_button(
     data=pdf_bytes,
     file_name=f"reporte_{fecha_desde}_{fecha_hasta}.pdf",
     mime="application/pdf"
+)
+
+# --- Excel ---
+def generar_excel_reporte(lista_movimientos):
+    libro = Workbook()
+    hoja = libro.active
+    hoja.title = "Movimientos"
+
+    encabezados = ["Fecha", "Cuenta", "Categoría", "Tipo", "Importe", "Cuenta destino", "Nota"]
+    hoja.append(encabezados)
+
+    for celda in hoja[1]:
+        celda.font = Font(bold=True, color="FFFFFF")
+        celda.fill = PatternFill(start_color="0F6B5C", end_color="0F6B5C", fill_type="solid")
+
+    for mov in lista_movimientos:
+        hoja.append([
+            mov["fecha"],
+            mov["cuenta"],
+            mov["categoria"] if mov["categoria"] else "",
+            mov["tipo"],
+            mov["importe"],
+            mov["cuenta_destino"] if mov["cuenta_destino"] else "",
+            mov["nota"] if mov["nota"] else ""
+        ])
+
+    for columna in hoja.columns:
+        ancho_maximo = 0
+        letra_columna = columna[0].column_letter
+        for celda in columna:
+            valor = str(celda.value) if celda.value is not None else ""
+            if len(valor) > ancho_maximo:
+                ancho_maximo = len(valor)
+        hoja.column_dimensions[letra_columna].width = ancho_maximo + 2
+
+    buffer_excel = io.BytesIO()
+    libro.save(buffer_excel)
+    buffer_excel.seek(0)
+    return buffer_excel
+
+excel_bytes = generar_excel_reporte(movimientos_filtrados)
+
+col3.download_button(
+    label="Descargar Excel",
+    data=excel_bytes,
+    file_name=f"reporte_{fecha_desde}_{fecha_hasta}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
