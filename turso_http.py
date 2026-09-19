@@ -38,7 +38,11 @@ def ejecutar(sql, parametros=None):
     respuesta.raise_for_status()
     datos = respuesta.json()
 
-    resultado = datos["results"][0]["response"]["result"]
+    primer_resultado = datos["results"][0]
+    if primer_resultado.get("type") == "error":
+        raise Exception(f"Error de Turso: {primer_resultado['error']}")
+
+    resultado = primer_resultado["response"]["result"]
     columnas = [c["name"] for c in resultado["cols"]]
 
     filas = []

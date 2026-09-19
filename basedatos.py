@@ -184,11 +184,6 @@ def eliminar_recurrente(id_recurrente):
     ejecutar("DELETE FROM recurrentes WHERE id = ?", (id_recurrente,))
 
 
-if __name__ == "__main__":
-    crear_tablas()
-    print("Tablas creadas correctamente en Turso.")
-    crear_tabla_archivo()
-
 def crear_tabla_archivo():
     ejecutar("""
         CREATE TABLE IF NOT EXISTS movimientos_archivo (
@@ -203,6 +198,12 @@ def crear_tabla_archivo():
             nota TEXT
         )
     """)
+
+
+if __name__ == "__main__":
+    crear_tablas()
+    crear_tabla_archivo()
+    print("Tablas creadas correctamente en Turso.")
 
 
 def insertar_movimiento_archivo(anio, fecha, cuenta, categoria, tipo, importe, cuenta_destino, nota):
