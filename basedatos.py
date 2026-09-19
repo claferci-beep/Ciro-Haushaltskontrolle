@@ -187,3 +187,34 @@ def eliminar_recurrente(id_recurrente):
 if __name__ == "__main__":
     crear_tablas()
     print("Tablas creadas correctamente en Turso.")
+    crear_tabla_archivo()
+
+def crear_tabla_archivo():
+    ejecutar("""
+        CREATE TABLE IF NOT EXISTS movimientos_archivo (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            anio TEXT NOT NULL,
+            fecha TEXT NOT NULL,
+            cuenta TEXT NOT NULL,
+            categoria TEXT,
+            tipo TEXT NOT NULL,
+            importe REAL NOT NULL,
+            cuenta_destino TEXT,
+            nota TEXT
+        )
+    """)
+
+
+def insertar_movimiento_archivo(anio, fecha, cuenta, categoria, tipo, importe, cuenta_destino, nota):
+    ejecutar(
+        "INSERT INTO movimientos_archivo (anio, fecha, cuenta, categoria, tipo, importe, cuenta_destino, nota) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (anio, fecha, cuenta, categoria, tipo, importe, cuenta_destino, nota)
+    )
+
+
+def obtener_movimientos_archivo(anio=None):
+    if anio:
+        filas, _ = ejecutar("SELECT * FROM movimientos_archivo WHERE anio = ?", (anio,))
+    else:
+        filas, _ = ejecutar("SELECT * FROM movimientos_archivo")
+    return filas
