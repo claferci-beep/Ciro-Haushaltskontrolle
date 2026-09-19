@@ -121,26 +121,39 @@ for mov in movimientos:
 
 st.markdown(f'<p style="color:#FFFFFF; font-weight:bold;">Mostrando {len(movimientos_filtrados)} de {len(movimientos)} movimientos</p>', unsafe_allow_html=True)
 
-try:
-    st.dataframe(
-    movimientos_filtrados,
-    use_container_width=True,
-    column_config={
-        "nota": st.column_config.TextColumn("Nota", width="medium")
-    }
-)
-except Exception:
-    tabla_md = "| Fecha | Cuenta | Categoría | Tipo | Importe | Cuenta destino | Nota |\n"
-    tabla_md += "|---|---|---|---|---|---|---|\n"
+meses_agrupados = {}
+for mov in movimientos_filtrados:
+    mes_mov = mov["fecha"][:7]
+    if mes_mov not in meses_agrupados:
+        meses_agrupados[mes_mov] = []
+    meses_agrupados[mes_mov].append(mov)
 
-    for mov in movimientos_filtrados:
-        categoria = mov["categoria"] if mov["categoria"] else "-"
-        destino = mov["cuenta_destino"] if mov["cuenta_destino"] else "-"
-        nota = mov["nota"] if mov["nota"] else "-"
-        tabla_md += f"| {mov['fecha']} | {mov['cuenta']} | {categoria} | {mov['tipo']} | {mov['importe']:.2f} € | {destino} | {nota} |\n"
+meses_ordenados = sorted(meses_agrupados.keys(), reverse=True)
 
-    with st.container(height=400):
-        st.markdown(tabla_md)
+with st.container(height=280):
+    for mes_mov in meses_ordenados:
+        movs_del_mes = meses_agrupados[mes_mov]
+        with st.expander(f"{mes_mov} ({len(movs_del_mes)})"):
+            try:
+                st.dataframe(
+                    movs_del_mes,
+                    use_container_width=True,
+                    column_config={
+                        "nota": st.column_config.TextColumn("Nota", width="medium")
+                    }
+                )
+            except Exception:
+                tabla_md = "| Fecha | Cuenta | Categoría | Tipo | Importe | Cuenta destino | Nota |\n"
+                tabla_md += "|---|---|---|---|---|---|---|\n"
+
+                for mov in movs_del_mes:
+                    categoria = mov["categoria"] if mov["categoria"] else "-"
+                    destino = mov["cuenta_destino"] if mov["cuenta_destino"] else "-"
+                    nota = mov["nota"] if mov["nota"] else "-"
+                    tabla_md += f"| {mov['fecha']} | {mov['cuenta']} | {categoria} | {mov['tipo']} | {mov['importe']:.2f} € | {destino} | {nota} |\n"
+
+                with st.container(height=400):
+                    st.markdown(tabla_md)
 
 st.subheader("Editar o eliminar un movimiento")
 
