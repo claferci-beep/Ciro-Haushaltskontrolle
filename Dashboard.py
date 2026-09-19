@@ -319,3 +319,58 @@ except Exception:
         st.write(f"**{item['categoria']}**: {real:.2f} € de {item['presupuesto']:.2f} € ({porcentaje*100:.0f}%)")
         st.progress(porcentaje_mostrado)
 
+st.subheader("Evolución del saldo total")
+
+try:
+    cuentas_incluidas = [c["nombre"] for c in cuentas if c["saldo_actual"] >= 0]
+
+    saldo_acumulado = {}
+    for cuenta in cuentas:
+        if cuenta["nombre"] in cuentas_incluidas:
+            saldo_acumulado[cuenta["nombre"]] = cuenta["saldo_inicial"]
+
+    hoy_str = str(date.today())
+    movimientos_ordenados = sorted(movimientos, key=lambda m: m["fecha"])
+
+    evolucion_mensual = {}
+
+    for mov in movimientos_ordenados:
+        if mov["fecha"] > hoy_str:
+            continue
+
+        if mov["cuenta"] in saldo_acumulado:
+            if mov["tipo"] == "Ingreso":
+                saldo_acumulado[mov["cuenta"]] += mov["importe"]
+            elif mov["tipo"] in ("Gasto", "Traspaso"):
+                saldo_acumulado[mov["cuenta"]] -= mov["importe"]
+
+        if mov["cuenta_destino"] in saldo_acumulado:
+            saldo_acumulado[mov["cuenta_destino"]] += mov["importe"]
+
+        mes = mov["fecha"][:7]
+        evolucion_mensual[mes] = sum(saldo_acumulado.values())
+
+    meses_ordenados = sorted(evolucion_mensual.keys())
+
+    if meses_ordenados:
+        valores_evolucion = [evolucion_mensual[mes] for mes in meses_ordenados]
+
+        figura_evolucion = go.Figure()
+        figura_evolucion.add_trace(go.Scatter(
+            x=meses_ordenados,
+            y=valores_evolucion,
+            mode="lines+markers",
+            line=dict(color="#0F6B5C", width=3),
+            marker=dict(size=7)
+        ))
+        figura_evolucion.update_layout(height=350, margin=dict(t=20, b=20, l=20, r=20))
+
+        st.plotly_chart(figura_evolucion, use_container_width=True)
+    else:
+        st.info("Todavía no hay movimientos para mostrar la evolución.")
+
+except Exception:
+    st.write("No se pudo generar el gráfico. Valores por mes:")
+    for mes in sorted(evolucion_mensual.keys()):
+        st.write(f"{mes}: {evolucion_mensual[mes]:.2f} €")
+
