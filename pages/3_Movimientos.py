@@ -152,11 +152,15 @@ with st.container(height=280):
                     df.style.apply(color_fila, axis=1),
                     use_container_width=True,
                     column_config={
-                        "nota": st.column_config.TextColumn("Nota", width="medium")
-                    }
+                        "nota": st.column_config.TextColumn("Nota", width="medium"),
+                        "importe": st.column_config.NumberColumn("Importe", format="%.2f €")
+                     }
                 )
+                        
+                    
+            
             except Exception:
-                colores_tipo = {"Gasto": "#C0392B", "Ingreso": "#1F6FEB", "Traspaso": "#0F6B5C"}
+                colores_tipo = {"Gasto": "#C0392B", "Ingreso": "#1F6FEB", "Traspaso": "#16AD05"}
                 filas_html = ""
                 for mov in movs_del_mes:
                     color = colores_tipo.get(mov["tipo"], "#000000")
@@ -205,7 +209,7 @@ if movimientos_filtrados:
     indice_elegido = st.selectbox("Elige un movimiento", range(len(etiquetas)), format_func=lambda i: etiquetas[i])
     mov = movimientos_filtrados[indice_elegido]
 
-    colores_tipo = {"Gasto": "#AC270A", "Ingreso": "#153C96", "Traspaso": "#19C00D"}
+    colores_tipo = {"Gasto": "#AC270A", "Ingreso": "#153C96", "Traspaso": "#28E41B"}
     color_mov = colores_tipo.get(mov["tipo"], "#000000")
     st.markdown(    
         f"<p style='color:{color_mov}; font-weight:bold;'>Editando: {mov['fecha']} — {mov['cuenta']} — {mov['tipo']} — {mov['importe']:.2f} €</p>",
