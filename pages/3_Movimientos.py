@@ -134,26 +134,66 @@ with st.container(height=280):
     for mes_mov in meses_ordenados:
         movs_del_mes = meses_agrupados[mes_mov]
         with st.expander(f"{mes_mov} ({len(movs_del_mes)})"):
+
             try:
+                import pandas as pd
+
+                df = pd.DataFrame(movs_del_mes)
+
+                def color_fila(fila):
+                    colores = {
+                        "Gasto": "color: #C0392B; font-weight: bold; font-size: 1rem;",
+                        "Ingreso": "color: #1F6FEB; font-weight: bold; font-size: 1rem;",
+                        "Traspaso": "color: #0F6B5C;bold; font-size: 1rem;"
+                    }
+                    return [colores.get(fila["tipo"], "")] * len(fila)
+
                 st.dataframe(
-                    movs_del_mes,
+                    df.style.apply(color_fila, axis=1),
                     use_container_width=True,
                     column_config={
                         "nota": st.column_config.TextColumn("Nota", width="medium")
                     }
                 )
             except Exception:
-                tabla_md = "| Fecha | Cuenta | Categoría | Tipo | Importe | Cuenta destino | Nota |\n"
-                tabla_md += "|---|---|---|---|---|---|---|\n"
-
+                colores_tipo = {"Gasto": "#C0392B", "Ingreso": "#1F6FEB", "Traspaso": "#0F6B5C"}
+                filas_html = ""
                 for mov in movs_del_mes:
+                    color = colores_tipo.get(mov["tipo"], "#000000")
                     categoria = mov["categoria"] if mov["categoria"] else "-"
                     destino = mov["cuenta_destino"] if mov["cuenta_destino"] else "-"
                     nota = mov["nota"] if mov["nota"] else "-"
-                    tabla_md += f"| {mov['fecha']} | {mov['cuenta']} | {categoria} | {mov['tipo']} | {mov['importe']:.2f} € | {destino} | {nota} |\n"
+                    filas_html += f"""
+                    <tr style="color: {color}; font-weight: bold; font-size: 0.95rem;">
+                        <td style="padding:4px;">{mov['fecha']}</td>
+                        <td style="padding:4px;">{mov['cuenta']}</td>
+                        <td style="padding:4px;">{categoria}</td>
+                        <td style="padding:4px;">{mov['tipo']}</td>
+                        <td style="padding:4px;">{mov['importe']:.2f} €</td>
+                        <td style="padding:4px;">{destino}</td>
+                        <td style="padding:4px;">{nota}</td>
+                    </tr>
+                    """
 
-                with st.container(height=400):
-                    st.markdown(tabla_md)
+                tabla_html = f"""
+                <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background-color: #0F6B5C; color: white;">
+                            <th style="padding:6px;">Fecha</th>
+                            <th style="padding:6px;">Cuenta</th>
+                            <th style="padding:6px;">Categoría</th>
+                            <th style="padding:6px;">Tipo</th>
+                            <th style="padding:6px;">Importe</th>
+                            <th style="padding:6px;">Cuenta destino</th>
+                            <th style="padding:6px;">Nota</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filas_html}
+                    </tbody>
+                </table>
+                """
+                st.markdown(tabla_html, unsafe_allow_html=True)
 
 st.subheader("Editar o eliminar un movimiento")
 
@@ -164,6 +204,13 @@ if movimientos_filtrados:
 
     indice_elegido = st.selectbox("Elige un movimiento", range(len(etiquetas)), format_func=lambda i: etiquetas[i])
     mov = movimientos_filtrados[indice_elegido]
+
+    colores_tipo = {"Gasto": "#AC270A", "Ingreso": "#153C96", "Traspaso": "#19C00D"}
+    color_mov = colores_tipo.get(mov["tipo"], "#000000")
+    st.markdown(    
+        f"<p style='color:{color_mov}; font-weight:bold;'>Editando: {mov['fecha']} — {mov['cuenta']} — {mov['tipo']} — {mov['importe']:.2f} €</p>",
+        unsafe_allow_html=True
+    )
 
     nueva_fecha = st.text_input("Fecha (AAAA-MM-DD)", value=mov["fecha"])
     nueva_cuenta = st.selectbox("Cuenta", nombres_cuentas[1:], index=nombres_cuentas[1:].index(mov["cuenta"]) if mov["cuenta"] in nombres_cuentas[1:] else 0)
@@ -185,18 +232,4 @@ if movimientos_filtrados:
         indice_cat = 0
     nueva_categoria = st.selectbox("Categoría", nombres_categorias, index=indice_cat)
 
-    nuevo_importe = st.number_input("Importe", value=mov["importe"])
-    nueva_nota = st.text_input("Nota", value=mov["nota"] if mov["nota"] else "")
-
-    colA, colB = st.columns(2)
-    if colA.button("Guardar cambios"):
-        actualizar_movimiento(mov["id"], nueva_fecha, nueva_cuenta, nueva_categoria, nuevo_tipo, nuevo_importe, nueva_cuenta_destino, nueva_nota)
-        st.success("Actualizado.")
-        st.rerun()
-
-    if colB.button("Eliminar movimiento"):
-        eliminar_movimiento(mov["id"])
-        st.success("Eliminado.")
-        st.rerun()
-else:
-    st.info("No hay movimientos para editar con los filtros actuales.")
+    nuevo_importe = st.number_input("Importe"),
