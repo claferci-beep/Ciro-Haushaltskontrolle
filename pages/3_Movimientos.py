@@ -2,6 +2,8 @@ import streamlit as st
 from basedatos import obtener_movimientos, obtener_cuentas, actualizar_movimiento, eliminar_movimiento, obtener_categorias
 from auth import verificar_password
 verificar_password()
+from datetime import datetime
+from confirmacion import confirmar, mostrar_aviso
 
 st.set_page_config(page_title="Movimientos", page_icon="📋", layout="wide")
 
@@ -85,6 +87,8 @@ st.markdown("""
         </div>
     </div>
 """, unsafe_allow_html=True)
+mostrar_aviso()
+
 
 movimientos = obtener_movimientos()
 cuentas = obtener_cuentas()
@@ -236,4 +240,43 @@ if movimientos_filtrados:
         indice_cat = 0
     nueva_categoria = st.selectbox("Categoría", nombres_categorias, index=indice_cat)
 
-    nuevo_importe = st.number_input("Importe"),
+    nuevo_importe = st.number_input(
+        "Importe (en positivo)", value=abs(float(mov["importe"])),
+        min_value=0.0, step=0.01, format="%.2f"
+    )
+    nueva_nota = st.text_input("Nota", value=mov["nota"] or "")
+
+    col_guardar, col_eliminar = st.columns(2)
+
+    if col_guardar.button("💾 Guardar cambios", width="stretch"):
+        errores = []
+        try:
+            datetime.strptime(nueva_fecha, "%Y-%m-%d")
+        except ValueError:
+            errores.append("La fecha debe tener el formato AAAA-MM-DD.")
+        if nuevo_importe <= 0:
+            errores.append("El importe debe ser mayor que 0.")
+        if nuevo_tipo == "Traspaso" and nueva_cuenta_destino == nueva_cuenta:
+            errores.append("La cuenta destino debe ser distinta de la cuenta origen.")
+
+        if errores:
+            for e in errores:
+                st.error(e)
+        else:
+            importe_final = -nuevo_importe if nuevo_tipo in ("Gasto", "Traspaso") else nuevo_importe
+            confirmar(
+                f"¿Guardar los cambios? Nuevo importe: {importe_final:.2f} € en {nueva_cuenta}.",
+                actualizar_movimiento,
+                mov["id"], nueva_fecha, nueva_cuenta, nueva_categoria,
+                nuevo_tipo, importe_final, nueva_cuenta_destino, nueva_nota
+            )
+
+    if col_eliminar.button("🗑️ Eliminar movimiento", width="stretch"):
+        confirmar(
+            f"¿Eliminar este movimiento? ({mov['fecha']} — {mov['cuenta']} — {mov['importe']:.2f} €) "
+            "Esta acción no se puede deshacer.",
+            eliminar_movimiento,
+            mov["id"]
+        )
+else:
+    st.info("No hay movimientos con los filtros seleccionados.")

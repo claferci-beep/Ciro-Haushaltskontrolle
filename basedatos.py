@@ -64,19 +64,19 @@ def crear_tablas():
 def insertar_cuenta(nombre, banco, tipo, saldo_inicial):
     ejecutar(
         "INSERT INTO cuentas (nombre, banco, tipo, saldo_inicial, saldo_actual) VALUES (?, ?, ?, ?, ?)",
-        (nombre, banco, tipo, saldo_inicial, saldo_inicial)
+        (nombre.strip(), banco, tipo, saldo_inicial, saldo_inicial)
     )
 
 
 def obtener_cuentas():
-    filas, _ = ejecutar("SELECT id, nombre, banco, tipo, saldo_inicial, saldo_actual FROM cuentas")
+    filas, _ = ejecutar("SELECT id, nombre, banco, tipo, saldo_inicial, saldo_actual FROM cuentas ORDER BY nombre ASC")
     return filas
 
 
 def actualizar_cuenta(id_cuenta, nombre, banco, tipo, saldo_inicial):
     ejecutar(
         "UPDATE cuentas SET nombre = ?, banco = ?, tipo = ?, saldo_inicial = ? WHERE id = ?",
-        (nombre, banco, tipo, saldo_inicial, id_cuenta)
+        (nombre.strip(), banco, tipo, saldo_inicial, id_cuenta)
     )
 
 
