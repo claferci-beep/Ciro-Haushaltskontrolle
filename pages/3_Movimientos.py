@@ -263,7 +263,7 @@ if movimientos_filtrados:
             for e in errores:
                 st.error(e)
         else:
-            importe_final = -nuevo_importe if nuevo_tipo in ("Gasto", "Traspaso") else nuevo_importe
+            importe_final = nuevo_importe
             confirmar(
                 f"¿Guardar los cambios? Nuevo importe: {importe_final:.2f} € en {nueva_cuenta}.",
                 actualizar_movimiento,
