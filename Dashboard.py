@@ -7,6 +7,7 @@ from auth import verificar_password
 verificar_password()
 
 import plotly.graph_objects as go
+import calendar
 from datetime import date
 
 st.set_page_config(page_title="Dashboard", page_icon="🏠")
@@ -128,7 +129,13 @@ def contar_generados(descripcion, lista_movimientos):
 
 def generar_recurrentes(lista_recurrentes, lista_movimientos, mes_actual):
     generados = []
+    anio, mes = int(mes_actual[:4]), int(mes_actual[5:7])
+    ultimo_dia_mes = calendar.monthrange(anio, mes)[1]
+
     for r in lista_recurrentes:
+        if r["mes_inicio"] and mes_actual < r["mes_inicio"]:
+            continue
+
         ya_generados = contar_generados(r["descripcion"], lista_movimientos)
         ya_existe_este_mes = False
         for mov in lista_movimientos:
@@ -138,7 +145,8 @@ def generar_recurrentes(lista_recurrentes, lista_movimientos, mes_actual):
         cupo_disponible = r["cuotas_totales"] == 0 or ya_generados < r["cuotas_totales"]
 
         if not ya_existe_este_mes and cupo_disponible:
-            fecha_nueva = f"{mes_actual}-{r['dia_del_mes']:02d}"
+            dia = min(int(r["dia_del_mes"]), ultimo_dia_mes)
+            fecha_nueva = f"{mes_actual}-{dia:02d}"
             insertar_movimiento(fecha_nueva, r["cuenta"], r["categoria"], r["tipo"], r["importe"], r["cuenta_destino"], f"[Recurrente] {r['descripcion']}")
             generados.append(r["descripcion"])
     return generados
@@ -195,7 +203,7 @@ for cuenta in cuentas:
 
 aplicar_movimientos(cuentas, movimientos)
 
-mes_actual = "2026-09"
+mes_actual = date.today().strftime("%Y-%m")
 ingresos, gastos = calcular_ingresos_gastos(movimientos, mes_actual)
 balance = ingresos - gastos
 
