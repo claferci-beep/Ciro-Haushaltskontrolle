@@ -173,8 +173,9 @@ def eliminar_presupuesto(id_presupuesto):
 
 def insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales):
     ejecutar(
-        "INSERT INTO recurrentes (descripcion, cuenta, categoria, tipo, abs(float(importe)), cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales)
+        "INSERT INTO recurrentes (descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (descripcion, cuenta, categoria, tipo, abs(float(importe)), cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales)
+    
     )
 
 
@@ -185,8 +186,8 @@ def obtener_recurrentes():
 
 def actualizar_recurrente(id_recurrente, descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales):
     ejecutar(
-        "UPDATE recurrentes SET descripcion = ?, cuenta = ?, categoria = ?, tipo = ?, abs(float(importe)), cuenta_destino = ?, dia_del_mes = ?, mes_inicio = ?, cuotas_totales = ? WHERE id = ?",
-        (descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales, id_recurrente)
+        "UPDATE recurrentes SET descripcion = ?, cuenta = ?, categoria = ?, tipo = ?, importe = ?, cuenta_destino = ?, dia_del_mes = ?, mes_inicio = ?, cuotas_totales = ? WHERE id = ?",
+        (descripcion, cuenta, categoria, tipo, abs(float(importe)), cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales, id_recurrente)
     )
 
 
