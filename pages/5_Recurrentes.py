@@ -78,6 +78,26 @@ font-weight: bold !important;
     font-weight: bold !important;
 }
 
+[data-testid="stExpander"] details {
+    border: 2px solid #0F6B5C !important;
+    border-radius: 10px !important;
+     margin-bottom: 6px;
+}
+
+[data-testid="stExpander"] summary {
+    background-color: #FFFFFF !important;
+    border-radius: 8px !important;
+}
+
+[data-testid="stExpander"] summary p {
+    color: #4A9A8C !important;
+    font-weight: 600 !important;
+}
+
+[data-testid="stExpander"] summary svg {
+    color: #4A9A8C !important;
+}    
+
     </style>
 """, unsafe_allow_html=True)
 
