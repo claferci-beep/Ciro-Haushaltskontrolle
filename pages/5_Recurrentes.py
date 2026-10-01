@@ -1,8 +1,10 @@
 import streamlit as st
+import re
 from basedatos import obtener_recurrentes, insertar_recurrente, actualizar_recurrente, eliminar_recurrente, obtener_cuentas, obtener_categorias
 st.set_page_config(page_title="Recurrentes", page_icon="🔁")
 from auth import verificar_password
 verificar_password()
+
 
 st.markdown("""
     <style>
@@ -169,6 +171,9 @@ with st.form("nuevo_recurrente", clear_on_submit=True):
     enviado = st.form_submit_button("Agregar recurrente")
 
 if enviado:
-    insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, cuenta_destino_recurrente, dia_del_mes, mes_inicio, cuotas_totales)
-    st.success("Recurrente agregado.")
-    st.rerun()
+    if mes_inicio and not re.fullmatch(r"\d{4}-\d{2}", mes_inicio.strip()):
+        st.error("El mes de inicio debe tener el formato AAAA-MM, por ejemplo 2026-10.")
+    else:
+        insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, cuenta_destino_recurrente, dia_del_mes, mes_inicio.strip(), cuotas_totales)
+        st.success("Recurrente agregado.")
+        st.rerun()
