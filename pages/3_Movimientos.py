@@ -205,18 +205,31 @@ with st.container(height=280):
 
 st.subheader("Editar o eliminar un movimiento")
 
-if movimientos_filtrados:
-    etiquetas = []
-    for mov in movimientos_filtrados:
-        etiquetas.append(f"{mov['fecha']} — {mov['cuenta']} — {mov['tipo']} — {mov['importe']:.2f} €")
+movimientos_por_id = {int(m["id"]): m for m in movimientos}
 
-    indice_elegido = st.selectbox("Elige un movimiento", range(len(etiquetas)), format_func=lambda i: etiquetas[i])
-    mov = movimientos_filtrados[indice_elegido]
+col_nr, _ = st.columns([1, 3])
+nr_elegido = col_nr.number_input("Buscar Id Nr.:", min_value=0, step=1, value=0)
+mov = movimientos_por_id.get(int(nr_elegido))
+
+if mov:
 
     colores_tipo = {"Gasto": "#AC270A", "Ingreso": "#153C96", "Traspaso": "#28E41B"}
     color_mov = colores_tipo.get(mov["tipo"], "#000000")
-    st.markdown(    
-        f"<p style='color:{color_mov}; font-weight:bold;'>Editando: {mov['fecha']} — {mov['cuenta']} — {mov['tipo']} — {mov['importe']:.2f} €</p>",
+    st.markdown(
+        f"""
+        <div style="
+            background-color: #FFFFFF;
+            border: 2px solid #0F6B5C;
+            border-left: 6px solid {color_mov};
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 6px 0 14px 0;
+            color: #0F6B5C;
+            font-weight: 600;
+        ">
+            Editando Id Nr. {mov['id']}: {mov['fecha']} — {mov['cuenta']} — {mov['tipo']} — {mov['importe']:.2f} €
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -279,4 +292,7 @@ if movimientos_filtrados:
             mov["id"]
         )
 else:
-    st.info("No hay movimientos con los filtros seleccionados.")
+    if nr_elegido == 0:
+        st.info("Escribe el Id Nr. del movimiento que quieres editar o eliminar (columna Id de las tablas de arriba).")
+    else:
+        st.warning(f"No existe ningún movimiento con el Id Nr. {nr_elegido}.")
