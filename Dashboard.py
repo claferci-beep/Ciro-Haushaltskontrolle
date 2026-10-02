@@ -305,8 +305,8 @@ try:
         valores_real.append(real)
 
     figura = go.Figure()
-    figura.add_trace(go.Bar(name="Presupuesto", x=nombres_categorias_grafico, y=valores_presupuesto, marker_color="#8FA998"))
-    figura.add_trace(go.Bar(name="Real", x=nombres_categorias_grafico, y=valores_real, marker_color="#0F6B5C"))
+    figura.add_trace(go.Bar(name="Presupuesto", x=nombres_categorias_grafico, y=valores_presupuesto, marker_color="#E99FBA"))
+    figura.add_trace(go.Bar(name="Real", x=nombres_categorias_grafico, y=valores_real, marker_color="#C09470"))
     figura.update_layout(barmode="group", height=350, margin=dict(t=20, b=20, l=20, r=20))
 
     st.plotly_chart(figura, use_container_width=True)
@@ -327,58 +327,61 @@ except Exception:
         st.write(f"**{item['categoria']}**: {real:.2f} € de {item['presupuesto']:.2f} € ({porcentaje*100:.0f}%)")
         st.progress(porcentaje_mostrado)
 
-st.subheader("Evolución del saldo total")
+st.subheader("Distribución del mes")
 
 try:
-    cuentas_incluidas = [c["nombre"] for c in cuentas if c["saldo_actual"] >= 0]
+    gastos_por_categoria = {}
+    for mov in movimientos:
+        if mov["fecha"][:7] == mes_actual and mov["tipo"] == "Gasto":
+            categoria = mov["categoria"] or "Sin categoría"
+            gastos_por_categoria[categoria] = gastos_por_categoria.get(categoria, 0) + float(mov["importe"])
 
-    saldo_acumulado = {}
-    for cuenta in cuentas:
-        if cuenta["nombre"] in cuentas_incluidas:
-            saldo_acumulado[cuenta["nombre"]] = cuenta["saldo_inicial"]
+    etiquetas_torta = list(gastos_por_categoria.keys())
+    valores_torta = list(gastos_por_categoria.values())
 
-    hoy_str = str(date.today())
-    movimientos_ordenados = sorted(movimientos, key=lambda m: m["fecha"])
+    # paleta = ["#0F6B5C", "#35859E", "#4A9A8C", "#8FA998", "#2E7D6B", "#6FB3A6", "#1F5F7A", "#A5C7C0"]
+    paleta = ["#E07A5F", "#3D8EB9", "#F2CC8F", "#81B29A", "#9B6FC3", "#F4A261", "#E5739D", "#5FA8D3",
+              "#C9A227", "#7FB7A4", "#D98BB5", "#8E9AAF", "#F6BD60", "#84A59D", "#B5838D", "#A3C4F3"]
+    colores_torta = [paleta[i % len(paleta)] for i in range(len(etiquetas_torta))]
+    
 
-    evolucion_mensual = {}
+    disponible = ingresos - gastos
+    if disponible > 0:
+        etiquetas_torta.append("Disponible")
+        valores_torta.append(disponible)
+        colores_torta.append("#D9EDE8")
 
-    for mov in movimientos_ordenados:
-        if mov["fecha"] > hoy_str:
-            continue
+    if valores_torta:
+        if mostrar_resto:
+            texto_centro = f"Ingresos<br><b>{ingresos:.2f} €</b>"
+            info_al_tocar = "%{label}: %{value:.2f} € (%{percent})<extra></extra>"
+        else:
+            texto_centro = "Ingresos<br><b>••••••</b>"
+            info_al_tocar = "%{label}: %{percent}<extra></extra>"
 
-        if mov["cuenta"] in saldo_acumulado:
-            if mov["tipo"] == "Ingreso":
-                saldo_acumulado[mov["cuenta"]] += mov["importe"]
-            elif mov["tipo"] in ("Gasto", "Traspaso"):
-                saldo_acumulado[mov["cuenta"]] -= mov["importe"]
-
-        if mov["cuenta_destino"] in saldo_acumulado:
-            saldo_acumulado[mov["cuenta_destino"]] += mov["importe"]
-
-        mes = mov["fecha"][:7]
-        evolucion_mensual[mes] = sum(saldo_acumulado.values())
-
-    meses_ordenados = sorted(evolucion_mensual.keys())
-
-    if meses_ordenados:
-        valores_evolucion = [evolucion_mensual[mes] for mes in meses_ordenados]
-
-        figura_evolucion = go.Figure()
-        figura_evolucion.add_trace(go.Scatter(
-            x=meses_ordenados,
-            y=valores_evolucion,
-            mode="lines+markers",
-            line=dict(color="#0F6B5C", width=3),
-            marker=dict(size=7)
+        figura_torta = go.Figure(go.Pie(
+            labels=etiquetas_torta,
+            values=valores_torta,
+            hole=0.5,
+            sort=True,
+            textinfo="percent",
+            hovertemplate=info_al_tocar,
+            marker=dict(colors=colores_torta, line=dict(color="#FFFFFF", width=2))
         ))
-        figura_evolucion.update_layout(height=350, margin=dict(t=20, b=20, l=20, r=20))
+        figura_torta.update_layout(
+            height=420,
+            margin=dict(t=20, b=20, l=20, r=20),
+            annotations=[dict(text=texto_centro, showarrow=False, font=dict(size=15, color="#F5FAFA"))]
+        )
+        st.plotly_chart(figura_torta, width="stretch")
 
-        st.plotly_chart(figura_evolucion, use_container_width=True)
+        if disponible < 0:
+            st.warning("Este mes los gastos superan a los ingresos.")
     else:
-        st.info("Todavía no hay movimientos para mostrar la evolución.")
+        st.info("Todavía no hay ingresos ni gastos registrados este mes.")
 
-except Exception:
-    st.write("No se pudo generar el gráfico. Valores por mes:")
-    for mes in sorted(evolucion_mensual.keys()):
-        st.write(f"{mes}: {evolucion_mensual[mes]:.2f} €")
-
+except Exception as e:
+    st.error(f"Detalle del error: {e}")
+    st.write("No se pudo generar el gráfico. Gastos del mes por categoría:")
+    for categoria, total in gastos_por_categoria.items():
+        st.write(f"{categoria}: {total:.2f} €")

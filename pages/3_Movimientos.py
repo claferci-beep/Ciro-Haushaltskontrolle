@@ -293,6 +293,21 @@ if mov:
         )
 else:
     if nr_elegido == 0:
-        st.info("Escribe el Id Nr. del movimiento que quieres editar o eliminar (columna Id de las tablas de arriba).")
+        #st.info("Escribe el Id Nr. del movimiento que quieres editar o eliminar (columna Id de las tablas de arriba).")
+        st.markdown(
+            """
+            <div style="
+                background-color: #E4EEEC;
+                border-left: 5px solid #0F6B5C;
+                border-radius: 8px;
+                padding: 10px 14px;
+                color: #0F6B5C;
+                font-weight: 600;
+            ">
+                Escribe el Id Nr. del movimiento que quieres editar o eliminar (columna Id de las tablas de arriba).
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     else:
         st.warning(f"No existe ningún movimiento con el Id Nr. {nr_elegido}.")

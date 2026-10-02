@@ -9,7 +9,9 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-    [data-testid="stMarkdownContainer"],
+    [data-testid="stMarkdownContainer"] h3 {
+    color: #FFFFFF !important;
+    },
     [data-testid="stMetricValue"],
     [data-testid="stMetricLabel"],
     [data-testid="stWidgetLabel"],
