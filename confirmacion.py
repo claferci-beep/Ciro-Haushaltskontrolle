@@ -22,3 +22,11 @@ def mostrar_aviso():
     """Muestra el mensaje de éxito tras un cambio confirmado (llamar al inicio de la página)."""
     if "_aviso" in st.session_state:
         st.success(st.session_state.pop("_aviso"))
+
+@st.dialog("Atención")
+def avisar(mensaje):
+    """Muestra una ventana de aviso con un solo botón para cerrarla."""
+    st.warning(mensaje)
+    if st.button("Entendido", type="primary", width="stretch"):
+        st.rerun()
+        

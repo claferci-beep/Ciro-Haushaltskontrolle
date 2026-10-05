@@ -280,8 +280,9 @@ cuenta_elegida = st.selectbox("Elige una cuenta:", nombres_cuentas)
 
 for cuenta in cuentas:
     if cuenta["nombre"] == cuenta_elegida:
-        st.markdown(f'<p style="color:#30C2C9; font-weight:bold;">Saldo de {cuenta_elegida}: {cuenta["saldo_actual"]:.3f} €</p>', unsafe_allow_html=True)
-
+        st.markdown(f'<p style="color:#255657; font-weight:bold;">Saldo de {cuenta_elegida}: {cuenta["saldo_actual"]:.3f} €</p>', unsafe_allow_html=True)
+#E5739D
+#30C2C9
 st.subheader("Presupuesto vs Real")
 
 for item in presupuestos:

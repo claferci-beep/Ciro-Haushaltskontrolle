@@ -3,7 +3,7 @@ from basedatos import obtener_movimientos, obtener_cuentas, actualizar_movimient
 from auth import verificar_password
 verificar_password()
 from datetime import datetime
-from confirmacion import confirmar, mostrar_aviso
+from confirmacion import confirmar, mostrar_aviso, avisar
 
 st.set_page_config(page_title="Movimientos", page_icon="📋", layout="wide")
 
@@ -273,8 +273,7 @@ if mov:
             errores.append("La cuenta destino debe ser distinta de la cuenta origen.")
 
         if errores:
-            for e in errores:
-                st.error(e)
+            avisar("\n\n".join(errores))
         else:
             importe_final = nuevo_importe
             confirmar(

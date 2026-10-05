@@ -1,5 +1,6 @@
 import streamlit as st
 from basedatos import obtener_cuentas, obtener_movimientos, obtener_categorias, insertar_movimiento
+from confirmacion import avisar
 from auth import verificar_password
 verificar_password()
 
@@ -128,14 +129,17 @@ with st.form("nuevo_movimiento", clear_on_submit=True):
     enviado = st.form_submit_button("Guardar movimiento")
 
 if enviado:
-    insertar_movimiento(
-        str(fecha),
-        cuenta_movimiento,
-        categoria_movimiento,
-        tipo_movimiento,
-        importe_movimiento,
-        cuenta_destino_movimiento,
-        nota_movimiento
-    )
-    st.success("Movimiento guardado correctamente.")
-    st.rerun()
+    if importe_movimiento <= 0:
+        avisar("Ingresa un importe mayor que 0 antes de guardar.")
+    else:
+        insertar_movimiento(
+            str(fecha),
+            cuenta_movimiento,
+            categoria_movimiento,
+            tipo_movimiento,
+            importe_movimiento,
+            cuenta_destino_movimiento,
+            nota_movimiento
+        )
+        st.success("Movimiento guardado correctamente.")
+        st.rerun()
