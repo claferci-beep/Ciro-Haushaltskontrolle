@@ -142,7 +142,8 @@ def generar_recurrentes(lista_recurrentes, lista_movimientos, mes_actual):
             if mov["nota"] == f"[Recurrente] {r['descripcion']}" and mov["fecha"][:7] == mes_actual:
                 ya_existe_este_mes = True
 
-        cupo_disponible = r["cuotas_totales"] == 0 or ya_generados < r["cuotas_totales"]
+        previas = int(r.get("cuotas_previas") or 0)
+        cupo_disponible = r["cuotas_totales"] == 0 or (ya_generados + previas) < r["cuotas_totales"]
 
         if not ya_existe_este_mes and cupo_disponible:
             dia = min(int(r["dia_del_mes"]), ultimo_dia_mes)

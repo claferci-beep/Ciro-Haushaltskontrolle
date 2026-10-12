@@ -1,6 +1,6 @@
 import streamlit as st
 import re
-from basedatos import obtener_recurrentes, insertar_recurrente, actualizar_recurrente, eliminar_recurrente, obtener_cuentas, obtener_categorias
+from basedatos import obtener_recurrentes, insertar_recurrente, actualizar_recurrente, eliminar_recurrente, obtener_cuentas, obtener_categorias, actualizar_cuotas_previas
 st.set_page_config(page_title="Recurrentes", page_icon="🔁")
 from auth import verificar_password
 verificar_password()
@@ -139,10 +139,12 @@ for r in recurrentes:
         nuevo_importe = st.number_input("Importe", value=r["importe"], key=f"importe_{r['id']}")
         nuevo_dia = st.number_input("Día del mes", value=r["dia_del_mes"], min_value=1, max_value=31, key=f"dia_{r['id']}")
         nuevas_cuotas = st.number_input("Cuotas totales (0 = indefinido)", value=r["cuotas_totales"], min_value=0, key=f"cuotas_{r['id']}")
+        nuevas_previas = st.number_input("Cuotas ya pagadas antes de CIRO", value=int(r["cuotas_previas"] or 0), min_value=0, key=f"previas_{r['id']}")
 
         col1, col2 = st.columns(2)
         if col1.button("Guardar cambios", key=f"guardar_{r['id']}"):
             actualizar_recurrente(r["id"], nueva_descripcion, nueva_cuenta, nueva_categoria, nuevo_tipo, nuevo_importe, r["cuenta_destino"], nuevo_dia, r["mes_inicio"], nuevas_cuotas)
+            actualizar_cuotas_previas(r["id"], nuevas_previas)
             st.success("Actualizado. Refresca la página.")
             st.rerun()
 

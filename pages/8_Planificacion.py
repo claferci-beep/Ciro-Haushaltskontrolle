@@ -117,19 +117,20 @@ def planificar_recurrentes(lista_recurrentes, lista_movimientos, mes):
         generados = sorted(m["fecha"] for m in lista_movimientos if m["nota"] == nota)
         real = next((m for m in lista_movimientos if m["nota"] == nota and m["fecha"][:7] == mes), None)
         total_cuotas = int(r["cuotas_totales"] or 0)
+        previas = int(r.get("cuotas_previas") or 0)
 
         if real:
             fecha = real["fecha"]
             importe = float(real["importe"])
-            numero_cuota = generados.index(real["fecha"]) + 1
+            numero_cuota = generados.index(real["fecha"]) + 1 + previas
             estado = "✅ Pagado" if fecha <= hoy else "⏳ Registrado"
         else:
             fecha = f"{mes}-{min(int(r['dia_del_mes']), ultimo_dia):02d}"
             importe = float(r["importe"])
             if generados:
-                numero_cuota = max(1, len(generados) + diferencia_meses(generados[-1][:7], mes))
+                numero_cuota = max(1, len(generados) + diferencia_meses(generados[-1][:7], mes)) + previas
             else:
-                numero_cuota = 1
+                numero_cuota = 1 + previas
             if total_cuotas and numero_cuota > total_cuotas:
                 continue
             if fecha <= hoy and mes <= mes_hoy:

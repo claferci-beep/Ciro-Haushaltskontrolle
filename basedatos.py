@@ -180,7 +180,7 @@ def insertar_recurrente(descripcion, cuenta, categoria, tipo, importe, cuenta_de
 
 
 def obtener_recurrentes():
-    filas, _ = ejecutar("SELECT id, descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales FROM recurrentes")
+    filas, _ = ejecutar("SELECT id, descripcion, cuenta, categoria, tipo, importe, cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales, cuotas_previas FROM recurrentes")
     return filas
 
 
@@ -189,6 +189,9 @@ def actualizar_recurrente(id_recurrente, descripcion, cuenta, categoria, tipo, i
         "UPDATE recurrentes SET descripcion = ?, cuenta = ?, categoria = ?, tipo = ?, importe = ?, cuenta_destino = ?, dia_del_mes = ?, mes_inicio = ?, cuotas_totales = ? WHERE id = ?",
         (descripcion, cuenta, categoria, tipo, abs(float(importe)), cuenta_destino, dia_del_mes, mes_inicio, cuotas_totales, id_recurrente)
     )
+
+def actualizar_cuotas_previas(id_recurrente, cuotas_previas):
+    ejecutar("UPDATE recurrentes SET cuotas_previas = ? WHERE id = ?", (int(cuotas_previas), id_recurrente))
 
 
 def eliminar_recurrente(id_recurrente):
