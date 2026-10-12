@@ -230,3 +230,77 @@ def obtener_movimientos_archivo(anio=None):
     else:
         filas, _ = ejecutar("SELECT * FROM movimientos_archivo")
     return filas
+
+# ---------- PLANIFICACION ----------
+
+def crear_tabla_planificacion():
+    ejecutar("""
+        CREATE TABLE IF NOT EXISTS plan_mes (
+            mes TEXT PRIMARY KEY,
+            saldo_partida REAL,
+            fecha_saldo TEXT,
+            otros_ingresos REAL NOT NULL DEFAULT 0
+        )
+    """)
+
+
+def obtener_plan_mes(mes):
+    filas, _ = ejecutar("SELECT mes, saldo_partida, fecha_saldo, otros_ingresos FROM plan_mes WHERE mes = ?", (mes,))
+    return filas[0] if filas else None
+
+
+def guardar_plan_mes(mes, saldo_partida, fecha_saldo, otros_ingresos):
+    ejecutar(
+        "INSERT INTO plan_mes (mes, saldo_partida, fecha_saldo, otros_ingresos) VALUES (?, ?, ?, ?) "
+        "ON CONFLICT(mes) DO UPDATE SET saldo_partida = excluded.saldo_partida, "
+        "fecha_saldo = excluded.fecha_saldo, otros_ingresos = excluded.otros_ingresos",
+        (mes, saldo_partida, fecha_saldo, otros_ingresos)
+    )
+
+def crear_tabla_plan_items():
+    ejecutar("""
+        CREATE TABLE IF NOT EXISTS plan_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mes TEXT NOT NULL,
+            grupo TEXT NOT NULL,
+            descripcion TEXT,
+            fecha TEXT,
+            cuenta TEXT,
+            cuenta_destino TEXT,
+            categoria TEXT,
+            importe REAL NOT NULL DEFAULT 0,
+            movimiento_id INTEGER
+        )
+    """)
+
+
+def obtener_plan_items(mes, grupo):
+    filas, _ = ejecutar("SELECT * FROM plan_items WHERE mes = ? AND grupo = ? ORDER BY fecha, id", (mes, grupo))
+    return filas
+
+
+def insertar_plan_item(mes, grupo, descripcion, fecha, cuenta, cuenta_destino, categoria, importe):
+    ejecutar(
+        "INSERT INTO plan_items (mes, grupo, descripcion, fecha, cuenta, cuenta_destino, categoria, importe) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (mes, grupo, descripcion, fecha, cuenta, cuenta_destino, categoria, abs(float(importe or 0)))
+    )
+
+
+def actualizar_plan_item(id_item, descripcion, fecha, cuenta, cuenta_destino, categoria, importe):
+    ejecutar(
+        "UPDATE plan_items SET descripcion = ?, fecha = ?, cuenta = ?, cuenta_destino = ?, categoria = ?, importe = ? WHERE id = ?",
+        (descripcion, fecha, cuenta, cuenta_destino, categoria, abs(float(importe or 0)), id_item)
+    )
+
+
+def vincular_plan_item(id_item, movimiento_id):
+    ejecutar("UPDATE plan_items SET movimiento_id = ? WHERE id = ?", (movimiento_id, id_item))
+
+
+def eliminar_plan_item(id_item):
+    ejecutar("DELETE FROM plan_items WHERE id = ?", (id_item,))
+
+
+def obtener_ultimo_movimiento_id(nota, fecha):
+    filas, _ = ejecutar("SELECT id FROM movimientos WHERE nota = ? AND fecha = ? ORDER BY id DESC LIMIT 1", (nota, fecha))
+    return int(filas[0]["id"]) if filas else None

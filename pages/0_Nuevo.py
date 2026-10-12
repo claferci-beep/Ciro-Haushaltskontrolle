@@ -104,7 +104,6 @@ categorias = obtener_categorias()
 nombres_cuentas = []
 for cuenta in cuentas:
     nombres_cuentas.append(cuenta["nombre"])
-
 st.subheader("Agregar nuevo movimiento")
 
 tipo_movimiento = st.selectbox("Tipo", ["Ingreso", "Gasto", "Traspaso"], key="tipo_nuevo_mov")
