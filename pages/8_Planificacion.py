@@ -12,6 +12,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
 import streamlit as st
+import plotly.graph_objects as go
 
 from basedatos import (obtener_recurrentes, obtener_movimientos, obtener_cuentas, obtener_categorias,
                        crear_tabla_planificacion, obtener_plan_mes, guardar_plan_mes,
@@ -530,7 +531,107 @@ if filas:
                "📅 Previsto: vista previa, aún no generado · ⚠️ Sin generar: la fecha pasó y falta ejecutar los recurrentes")
 else:
     st.info("No hay pagos fijos para este mes.")
-    
+
+
+# ---------- Gráficos ----------
+st.subheader("Gráficos del mes")
+col_g1, col_g2 = st.columns(2)
+
+# Rosca: reparto del mes
+with col_g1:
+    disponible = saldo_partida + otros_ingresos
+    partes = [
+        ("Cargos fijos", cargos_restantes, "#0F6B5C"),
+        ("Pagos variables", variables_restantes, "#35859E"),
+        ("Ahorro", ahorro_restante, "#8FA998"),
+        ("Libre", max(libre, 0), "#D9EDE8"),
+    ]
+    partes = [p for p in partes if p[1] > 0]
+
+    if partes:
+        figura_rosca = go.Figure(go.Pie(
+            labels=[p[0] for p in partes],
+            values=[p[1] for p in partes],
+            customdata=[euros(p[1]) for p in partes],
+            hole=0.55,
+            sort=False,
+            textinfo="percent",
+            hovertemplate="%{label}: %{customdata} (%{percent})<extra></extra>",
+            marker=dict(colors=[p[2] for p in partes], line=dict(color="#FFFFFF", width=2)),
+        ))
+        figura_rosca.update_layout(
+            title="Reparto del mes",
+            height=380,
+            margin=dict(t=40, b=10, l=10, r=10),
+            legend=dict(orientation="h", y=-0.1),
+            annotations=[dict(text=f"Disponible<br><b>{euros(disponible)}</b>",
+                              showarrow=False, font=dict(size=14, color="#0F6B5C"))],
+        )
+        st.plotly_chart(figura_rosca, width="stretch")
+        if libre < 0:
+            st.warning(f"Faltan {euros(-libre)} para cubrir todo lo planificado.")
+    else:
+        st.info("Todavía no hay importes para repartir este mes.")
+
+# Línea: saldo de Girokonto día a día
+with col_g2:
+    anio_m, num_m = int(mes_elegido[:4]), int(mes_elegido[5:7])
+    ultimo_dia_txt = f"{mes_elegido}-{calendar.monthrange(anio_m, num_m)[1]:02d}"
+
+    eventos = []
+    for f in filas:
+        if f["Cuenta"] == CUENTA_PRINCIPAL and f["Fecha"] > fecha_corte:
+            signo = 1 if f["Tipo"] == "Ingreso" else -1
+            eventos.append((f["Fecha"], signo * f["Importe"], f["Concepto"]))
+    for f in filas_pagos:
+        fecha_txt = a_texto_fecha(f.get("Fecha"))
+        if ((texto(f.get("Cuenta")) or CUENTA_PRINCIPAL) == CUENTA_PRINCIPAL
+                and pendiente_de_restar(fecha_txt, fecha_corte) and num(f.get("Importe")) > 0):
+            eventos.append((fecha_txt or ultimo_dia_txt, -num(f.get("Importe")), texto(f.get("Concepto")) or "Pago"))
+    for f in filas_ahorro:
+        fecha_txt = a_texto_fecha(f.get("Fecha"))
+        if pendiente_de_restar(fecha_txt, fecha_corte) and num(f.get("Importe")) > 0:
+            eventos.append((fecha_txt or ultimo_dia_txt, -num(f.get("Importe")),
+                            f"Ahorro → {texto(f.get('Cuenta destino')) or ''}"))
+    eventos.sort()
+
+    fechas_x = [fecha_corte]
+    saldos_y = [saldo_partida + otros_ingresos]
+    detalles = ["Saldo de partida + Sonst. Plus"]
+    saldo_linea = saldos_y[0]
+    for fecha_txt, cambio, concepto in eventos:
+        saldo_linea += cambio
+        if fechas_x[-1] == fecha_txt:
+            saldos_y[-1] = saldo_linea
+            detalles[-1] += f"<br>{concepto}: {euros(cambio)}"
+        else:
+            fechas_x.append(fecha_txt)
+            saldos_y.append(saldo_linea)
+            detalles.append(f"{concepto}: {euros(cambio)}")
+
+    figura_linea = go.Figure(go.Scatter(
+        x=fechas_x,
+        y=saldos_y,
+        mode="lines+markers",
+        line=dict(color="#0F6B5C", width=3, shape="hv"),
+        marker=dict(size=8),
+        customdata=[euros(v) for v in saldos_y],
+        text=detalles,
+        hovertemplate="%{x|%d.%m.%Y}<br><b>Saldo: %{customdata}</b><br>%{text}<extra></extra>",
+    ))
+    figura_linea.add_hline(y=0, line_dash="dash", line_color="#C0392B")
+    figura_linea.update_layout(
+        title="Saldo de Girokonto día a día",
+        height=380,
+        margin=dict(t=40, b=10, l=10, r=10),
+        showlegend=False,
+    )
+    st.plotly_chart(figura_linea, width="stretch")
+
+    saldo_minimo = min(saldos_y)
+    dia_minimo = fechas_x[saldos_y.index(saldo_minimo)]
+    st.caption(f"Saldo más bajo previsto: {euros(saldo_minimo)} el {fecha_de(dia_minimo)}.")
+
 
     # ---------- Exportar a PDF ----------
 st.subheader("Exportar")
