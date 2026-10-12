@@ -4,6 +4,13 @@ import pandas as pd
 import numbers
 from datetime import date
 
+from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
 import streamlit as st
 
 from basedatos import (obtener_recurrentes, obtener_movimientos, obtener_cuentas, obtener_categorias,
@@ -267,6 +274,72 @@ def registrar_planificacion(mes, ids_movimientos):
             vincular_plan_item(int(it["id"]), obtener_ultimo_movimiento_id(nota, it["fecha"]))
 
 
+PDF_PETROL = colors.HexColor("#0F6B5C")
+PDF_FONDO = colors.HexColor("#E4EEEC")
+
+
+def euros(valor):
+    return f"{valor:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def sin_icono(estado):
+    return estado.split(" ", 1)[1] if estado and " " in estado else (estado or "")
+
+
+def fecha_de(valor):
+    t = a_texto_fecha(valor)
+    return f"{t[8:10]}.{t[5:7]}.{t[:4]}" if t else "—"
+
+
+def tabla_pdf(encabezados, filas_tabla, anchos, columna_importe):
+    tabla = Table([encabezados] + filas_tabla, colWidths=anchos, repeatRows=1)
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), PDF_PETROL),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, PDF_FONDO]),
+        ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#B8D5CF")),
+        ("ALIGN", (columna_importe, 1), (columna_importe, -1), "RIGHT"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    return tabla
+
+
+def generar_pdf(mes, resumen, texto_saldo, fijos, variables, ahorro):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, title=f"Planificación {mes}",
+                            leftMargin=1.5 * cm, rightMargin=1.5 * cm,
+                            topMargin=1.5 * cm, bottomMargin=1.5 * cm)
+    estilos = getSampleStyleSheet()
+    estilos["Title"].textColor = PDF_PETROL
+    estilos["Heading2"].textColor = PDF_PETROL
+
+    elementos = [
+        Paragraph(f"Planificación {mes}", estilos["Title"]),
+        Paragraph(f"CIRO Haushaltskontrolle · generado el {date.today().strftime('%d.%m.%Y')}", estilos["Normal"]),
+        Spacer(1, 0.4 * cm),
+        Paragraph("Resumen", estilos["Heading2"]),
+        tabla_pdf(["Concepto", "Importe"], [[c, euros(v)] for c, v in resumen], [11 * cm, 5 * cm], 1),
+        Paragraph(texto_saldo, estilos["Italic"]),
+    ]
+
+    if fijos:
+        elementos += [Spacer(1, 0.4 * cm), Paragraph("Pagos fijos", estilos["Heading2"]),
+                      tabla_pdf(["Fecha", "Concepto", "Cuenta", "Cuota", "Estado", "Importe"], fijos,
+                                [2.2 * cm, 4.6 * cm, 4 * cm, 1.8 * cm, 2.6 * cm, 2.6 * cm], 5)]
+    if variables:
+        elementos += [Spacer(1, 0.4 * cm), Paragraph("Pagos variables y puntuales", estilos["Heading2"]),
+                      tabla_pdf(["Fecha", "Concepto", "Cuenta", "Categoría", "Estado", "Importe"], variables,
+                                [2.2 * cm, 4 * cm, 3.6 * cm, 3 * cm, 2.4 * cm, 2.6 * cm], 5)]
+    if ahorro:
+        elementos += [Spacer(1, 0.4 * cm), Paragraph("Ahorro del mes", estilos["Heading2"]),
+                      tabla_pdf(["Cuenta destino", "Fecha", "Estado", "Importe"], ahorro,
+                                [7 * cm, 3 * cm, 3.4 * cm, 3 * cm], 3)]
+
+    doc.build(elementos)
+    return buffer.getvalue()
+
 mes_hoy = date.today().strftime("%Y-%m")
 opciones_mes = [sumar_meses(mes_hoy, n) for n in (-1, 0, 1, 2)]
 
@@ -457,3 +530,39 @@ if filas:
                "📅 Previsto: vista previa, aún no generado · ⚠️ Sin generar: la fecha pasó y falta ejecutar los recurrentes")
 else:
     st.info("No hay pagos fijos para este mes.")
+    
+
+    # ---------- Exportar a PDF ----------
+st.subheader("Exportar")
+
+resumen_pdf = [
+    ("Saldo de partida", saldo_partida),
+    ("Sonst. Plus", otros_ingresos),
+    ("Cargos fijos restantes", cargos_restantes),
+    ("Pagos variables restantes", variables_restantes),
+    ("Nuevo saldo previsto", nuevo_saldo),
+    ("Ahorro", ahorro_restante),
+    ("Libre para el mes", libre),
+]
+
+fijos_pdf = [[fecha_de(f["Fecha"]), f["Concepto"], f["Cuenta"], f["Cuota"], sin_icono(f["Estado"]), euros(f["Importe"])]
+             for f in filas]
+
+variables_pdf = [[fecha_de(f.get("Fecha")), texto(f.get("Concepto")) or "", texto(f.get("Cuenta")) or "",
+                  texto(f.get("Categoría")) or "", sin_icono(texto(f.get("Estado")) or "📝 Planificado"),
+                  euros(num(f.get("Importe")))]
+                 for f in filas_pagos if texto(f.get("Concepto")) or num(f.get("Importe")) > 0]
+
+ahorro_pdf = [[texto(f.get("Cuenta destino")) or "", fecha_de(f.get("Fecha")),
+               sin_icono(texto(f.get("Estado")) or "📝 Planificado"), euros(num(f.get("Importe")))]
+              for f in filas_ahorro]
+
+pdf_bytes = generar_pdf(mes_elegido, resumen_pdf, f"{texto_saldo} · corte: {fecha_corte}",
+                        fijos_pdf, variables_pdf, ahorro_pdf)
+
+st.download_button(
+    "📄 Descargar planificación en PDF",
+    data=pdf_bytes,
+    file_name=f"Planificacion_{mes_elegido}.pdf",
+    mime="application/pdf",
+)
