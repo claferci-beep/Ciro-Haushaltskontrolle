@@ -39,12 +39,17 @@ st.markdown("""
         font-family: 'Inter', sans-serif !important;
     }
 
-    [data-testid="stMetric"] {
-        background-color: #E4EEEC;
-        border-left: 5px solid #0F6B5C;
+        [data-testid="stMetric"] {
+        background-color: #FDE4D0;
+        border-left: 5px solid #E8956A;
         border-radius: 8px;
         padding: 14px 18px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"] p {
+        color: #8A4B2E !important;
     }
 
     [data-testid="stMetricValue"] {
@@ -71,20 +76,32 @@ st.markdown("""
     }
 
     [data-testid="stMarkdownContainer"] h3 {
+        color: #F4B6C2 !important;
+    }
+
+    [data-testid="stBaseButton-secondary"],
+    [data-testid="stBaseButton-primary"] {
+        background-color: #E8956A !important;
+        border-color: #8A4B2E !important;
+    }
+
+    [data-testid="stBaseButton-secondary"] p,
+    [data-testid="stBaseButton-primary"] p {
         color: #FFFFFF !important;
+        font-weight: bold !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
     <div style="
-        background-color: #FFFFFF;
-        border: 2px solid #0F6B5C;
+        background-color: #FFF4EC;
+        border: 2px solid #E8956A;
         border-radius: 10px;
         padding: 14px 22px;
         margin-bottom: 18px;
     ">
-        <div style="font-size: 1.5rem; font-weight: 700; color: #0F6B5C;">
+        <div style="font-size: 1.5rem; font-weight: 700; color: #8A4B2E;">
             Planificación
         </div>
     </div>
@@ -275,8 +292,8 @@ def registrar_planificacion(mes, ids_movimientos):
             vincular_plan_item(int(it["id"]), obtener_ultimo_movimiento_id(nota, it["fecha"]))
 
 
-PDF_PETROL = colors.HexColor("#0F6B5C")
-PDF_FONDO = colors.HexColor("#E4EEEC")
+PDF_PETROL = colors.HexColor("#E8956A")
+PDF_FONDO = colors.HexColor("#FDE4D0")
 
 
 def euros(valor):
@@ -300,7 +317,7 @@ def tabla_pdf(encabezados, filas_tabla, anchos, columna_importe):
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, PDF_FONDO]),
-        ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#B8D5CF")),
+        ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#F4B6C2")),
         ("ALIGN", (columna_importe, 1), (columna_importe, -1), "RIGHT"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]))
@@ -541,10 +558,10 @@ col_g1, col_g2 = st.columns(2)
 with col_g1:
     disponible = saldo_partida + otros_ingresos
     partes = [
-        ("Cargos fijos", cargos_restantes, "#0F6B5C"),
-        ("Pagos variables", variables_restantes, "#35859E"),
-        ("Ahorro", ahorro_restante, "#8FA998"),
-        ("Libre", max(libre, 0), "#D9EDE8"),
+        ("Cargos fijos", cargos_restantes, "#E8956A"),
+        ("Pagos variables", variables_restantes, "#F4B6C2"),
+        ("Ahorro", ahorro_restante, "#F7C9A9"),
+        ("Libre", max(libre, 0), "#FCE9DC"),
     ]
     partes = [p for p in partes if p[1] > 0]
 
@@ -565,7 +582,7 @@ with col_g1:
             margin=dict(t=40, b=10, l=10, r=10),
             legend=dict(orientation="h", y=-0.1),
             annotations=[dict(text=f"Disponible<br><b>{euros(disponible)}</b>",
-                              showarrow=False, font=dict(size=14, color="#0F6B5C"))],
+                              showarrow=False, font=dict(size=14, color="#8A4B2E"))],
         )
         st.plotly_chart(figura_rosca, width="stretch")
         if libre < 0:
@@ -613,7 +630,7 @@ with col_g2:
         x=fechas_x,
         y=saldos_y,
         mode="lines+markers",
-        line=dict(color="#0F6B5C", width=3, shape="hv"),
+        line=dict(color="#E8956A", width=3, shape="hv"),
         marker=dict(size=8),
         customdata=[euros(v) for v in saldos_y],
         text=detalles,
