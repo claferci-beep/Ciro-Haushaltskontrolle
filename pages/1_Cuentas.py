@@ -147,7 +147,7 @@ tipos_disponibles = ["Corriente", "Ahorro", "Efectivo", "Inversión", "Créditos
 
 with st.expander(f"Cuentas existentes ({len(cuentas)})"):
     for cuenta in cuentas:
-        with st.expander(f"{cuenta['nombre']} — {cuenta['saldo_actual']:.2f} € (inicial: {cuenta['saldo_inicial']:.2f} €)"):
+        with st.expander(f"{cuenta['nombre']} — **:yellow[{cuenta['saldo_actual']:.2f} €]** (inicial: {cuenta['saldo_inicial']:.2f} €)"):
             nuevo_nombre = st.text_input("Nombre", value=cuenta["nombre"], key=f"nombre_{cuenta['id']}")
             nuevo_banco = st.text_input("Banco", value=cuenta["banco"], key=f"banco_{cuenta['id']}")
 
