@@ -15,7 +15,7 @@ import streamlit as st
 import plotly.graph_objects as go
 
 from basedatos import (obtener_recurrentes, obtener_movimientos, obtener_cuentas, obtener_categorias,
-                       crear_tabla_planificacion, obtener_plan_mes, guardar_plan_mes,
+                       crear_tabla_planificacion, obtener_plan_mes, guardar_plan_mes, guardar_sueldo_plan,
                        crear_tabla_plan_items, obtener_plan_items, insertar_plan_item,
                        actualizar_plan_item, vincular_plan_item, eliminar_plan_item,
                        insertar_movimiento, actualizar_movimiento, obtener_ultimo_movimiento_id)
@@ -361,8 +361,29 @@ def generar_pdf(mes, resumen, texto_saldo, fijos, variables, ahorro):
 mes_hoy = date.today().strftime("%Y-%m")
 opciones_mes = [sumar_meses(mes_hoy, n) for n in (-1, 0, 1, 2)]
 
-col_mes, _ = st.columns([1, 3])
+MESES_ES = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+            "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
+
+col_mes, col_nombre, _ = st.columns([1, 1, 2])
 mes_elegido = col_mes.selectbox("Mes a planificar", opciones_mes, index=1)
+nombre_mes = MESES_ES[int(mes_elegido[5:7]) - 1]
+col_nombre.markdown(
+    f"""
+    <div style="
+        background-color: #FDE4D0;
+        border: 2px solid #E8956A;
+        border-radius: 10px;
+        padding: 6px 14px;
+        margin-top: 26px;
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #8A4B2E;
+    ">{nombre_mes}</div>
+    """,
+    unsafe_allow_html=True
+)
 
 movimientos = obtener_movimientos()
 filas = planificar_recurrentes(obtener_recurrentes(), movimientos, mes_elegido)
@@ -383,7 +404,19 @@ otros_guardados = float(plan["otros_ingresos"]) if plan else 0.0
 
 st.subheader("Resumen del mes")
 
-col_otros, col_btn = st.columns([1, 1])
+saldo_fijado = bool(plan and plan["saldo_partida"] is not None)
+
+sueldo_sugerido = sum(f["Importe"] for f in filas if f["Tipo"] == "Ingreso" and f["Cuenta"] == CUENTA_PRINCIPAL)
+sueldo_guardado = num(plan.get("sueldo")) if plan else 0.0
+sueldo_inicial = sueldo_guardado if sueldo_guardado > 0 else sueldo_sugerido
+
+col_sueldo, col_otros, col_btn = st.columns([1, 1, 1])
+sueldo_previsto = col_sueldo.number_input(
+    "Sueldo previsto (Entgelt)", value=float(sueldo_inicial),
+    min_value=0.0, step=0.01, format="%.2f", key=f"sueldo_{mes_elegido}",
+    disabled=saldo_fijado,
+    help="Se suma mientras el saldo de partida es provisional. Al fijar el saldo después de cobrar, ya va incluido."
+)
 otros_ingresos = col_otros.number_input(
     "Sonst. Plus (otros ingresos)", value=otros_guardados,
     min_value=0.0, step=0.01, format="%.2f", key=f"otros_{mes_elegido}"
@@ -393,10 +426,13 @@ saldo_guardado = plan["saldo_partida"] if plan else None
 fecha_guardada = plan["fecha_saldo"] if plan else None
 
 col_btn.write("")
-if col_btn.button("💾 Guardar Sonst. Plus"):
+if col_btn.button("💾 Guardar ingresos"):
     guardar_plan_mes(mes_elegido, saldo_guardado, fecha_guardada, otros_ingresos)
-    st.session_state["_aviso"] = "Sonst. Plus guardado."
+    guardar_sueldo_plan(mes_elegido, sueldo_previsto)
+    st.session_state["_aviso"] = "Ingresos guardados."
     st.rerun()
+
+sueldo_cuenta = 0.0 if saldo_fijado else sueldo_previsto
 
 col_fijar, col_soltar = st.columns(2)
 if col_fijar.button(f"📌 Fijar saldo de partida ({saldo_hoy_giro:.2f} €)", width="stretch"):
@@ -518,19 +554,20 @@ ahorro_restante = sum(
     num(f.get("Importe")) for f in filas_ahorro
     if pendiente_de_restar(a_texto_fecha(f.get("Fecha")), fecha_corte)
 )
-nuevo_saldo = saldo_partida + otros_ingresos - cargos_restantes - variables_restantes
+nuevo_saldo = saldo_partida + sueldo_cuenta + otros_ingresos - cargos_restantes - variables_restantes
 libre = nuevo_saldo - ahorro_restante
 
 with contenedor_resumen:
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("Saldo de partida", f"{saldo_partida:.2f} €")
-    c2.metric("Sonst. Plus", f"{otros_ingresos:.2f} €")
-    c3.metric("Cargos fijos restantes", f"{cargos_restantes:.2f} €")
-    c4.metric("Pagos variables restantes", f"{variables_restantes:.2f} €")
-    c5, c6, c7 = st.columns(3)
-    c5.metric("Nuevo saldo previsto", f"{nuevo_saldo:.2f} €")
-    c6.metric("Ahorro", f"{ahorro_restante:.2f} €")
-    c7.metric("Libre para el mes", f"{libre:.2f} €")
+    c2.metric("Sueldo previsto", f"{sueldo_cuenta:.2f} €")
+    c3.metric("Sonst. Plus", f"{otros_ingresos:.2f} €")
+    c4.metric("Cargos fijos restantes", f"{cargos_restantes:.2f} €")
+    c5.metric("Pagos variables restantes", f"{variables_restantes:.2f} €")
+    c6, c7, c8 = st.columns(3)
+    c6.metric("Nuevo saldo previsto", f"{nuevo_saldo:.2f} €")
+    c7.metric("Ahorro", f"{ahorro_restante:.2f} €")
+    c8.metric("Libre para el mes", f"{libre:.2f} €")
     st.caption(f"{texto_saldo} · Se resta solo lo de Girokonto con fecha posterior al {fecha_corte} (o sin fecha).")
 
 st.subheader("Pagos fijos del mes")
@@ -556,7 +593,7 @@ col_g1, col_g2 = st.columns(2)
 
 # Rosca: reparto del mes
 with col_g1:
-    disponible = saldo_partida + otros_ingresos
+    disponible = saldo_partida + sueldo_cuenta + otros_ingresos
     partes = [
         ("Cargos fijos", cargos_restantes, "#E8956A"),
         ("Pagos variables", variables_restantes, "#F4B6C2"),
@@ -597,9 +634,8 @@ with col_g2:
 
     eventos = []
     for f in filas:
-        if f["Cuenta"] == CUENTA_PRINCIPAL and f["Fecha"] > fecha_corte:
-            signo = 1 if f["Tipo"] == "Ingreso" else -1
-            eventos.append((f["Fecha"], signo * f["Importe"], f["Concepto"]))
+        if f["Cuenta"] == CUENTA_PRINCIPAL and f["Tipo"] != "Ingreso" and f["Fecha"] > fecha_corte:
+            eventos.append((f["Fecha"], -f["Importe"], f["Concepto"]))
     for f in filas_pagos:
         fecha_txt = a_texto_fecha(f.get("Fecha"))
         if ((texto(f.get("Cuenta")) or CUENTA_PRINCIPAL) == CUENTA_PRINCIPAL
@@ -613,8 +649,8 @@ with col_g2:
     eventos.sort()
 
     fechas_x = [fecha_corte]
-    saldos_y = [saldo_partida + otros_ingresos]
-    detalles = ["Saldo de partida + Sonst. Plus"]
+    saldos_y = [saldo_partida + sueldo_cuenta + otros_ingresos]
+    detalles = ["Saldo de partida + sueldo + Sonst. Plus"]
     saldo_linea = saldos_y[0]
     for fecha_txt, cambio, concepto in eventos:
         saldo_linea += cambio
@@ -655,6 +691,7 @@ st.subheader("Exportar")
 
 resumen_pdf = [
     ("Saldo de partida", saldo_partida),
+    ("Sueldo previsto", sueldo_cuenta),    
     ("Sonst. Plus", otros_ingresos),
     ("Cargos fijos restantes", cargos_restantes),
     ("Pagos variables restantes", variables_restantes),

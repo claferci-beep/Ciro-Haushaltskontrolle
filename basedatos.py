@@ -247,8 +247,9 @@ def crear_tabla_planificacion():
     """)
 
 
+
 def obtener_plan_mes(mes):
-    filas, _ = ejecutar("SELECT mes, saldo_partida, fecha_saldo, otros_ingresos FROM plan_mes WHERE mes = ?", (mes,))
+    filas, _ = ejecutar("SELECT mes, saldo_partida, fecha_saldo, otros_ingresos, sueldo FROM plan_mes WHERE mes = ?", (mes,))
     return filas[0] if filas else None
 
 
@@ -259,6 +260,15 @@ def guardar_plan_mes(mes, saldo_partida, fecha_saldo, otros_ingresos):
         "fecha_saldo = excluded.fecha_saldo, otros_ingresos = excluded.otros_ingresos",
         (mes, saldo_partida, fecha_saldo, otros_ingresos)
     )
+
+def guardar_sueldo_plan(mes, sueldo):
+    ejecutar(
+        "INSERT INTO plan_mes (mes, sueldo, otros_ingresos) VALUES (?, ?, 0) "
+        "ON CONFLICT(mes) DO UPDATE SET sueldo = excluded.sueldo",
+        (mes, abs(float(sueldo or 0)))
+    )
+
+
 
 def crear_tabla_plan_items():
     ejecutar("""
